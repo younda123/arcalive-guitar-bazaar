@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { deliveryLabels, statusClass, statusLabels } from "@/lib/labels";
 import { getItem } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+
 export default async function ItemDetailPage({
   params,
   searchParams

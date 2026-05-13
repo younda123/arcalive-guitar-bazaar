@@ -1,6 +1,10 @@
 .next
 node_modules
 data/store.json
+data/*.db
+data/*.db-journal
+data/*.db-shm
+data/*.db-wal
 public/uploads/*
 !public/uploads/.gitkeep
 .env

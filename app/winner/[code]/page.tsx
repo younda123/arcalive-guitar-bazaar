@@ -3,6 +3,8 @@ import { ItemCard } from "@/components/item-card";
 import { deliveryLabels, statusClass, statusLabels } from "@/lib/labels";
 import { getItem, getWinnerByCode, listSelectableItems } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+
 export default async function WinnerPage({
   params,
   searchParams
