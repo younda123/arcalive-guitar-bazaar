@@ -1,0 +1,10 @@
+services:
+  guitar-bazaar:
+    networks:
+      - default
+      - livlog_tunnel
+
+networks:
+  livlog_tunnel:
+    external: true
+    name: livlog_default
