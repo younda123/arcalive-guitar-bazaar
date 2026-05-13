@@ -30,9 +30,9 @@ export const copy = {
   },
   home: {
     eyebrow: "Arcalive Guitar Bazaar",
-    title: "후원 상품을 보여주고, 당첨자의 선택을 안전하게 기록합니다.",
+    title: "집에 남는 아이템을 서로서로 나누는 바자회",
     lead:
-      "회원가입 없이 상품을 등록하고, 운영자가 승인한 상품만 공개하며, 당첨자는 발급받은 코드로 하나의 상품을 선택합니다.",
+      "상품 등록 후 운영자가 승인한 물품만 공개 상품 목록에 표시됩니다. 당첨자 선정은 무작위 추첨으로 이루어지며, 당첨자는 운영자가 발급한 코드를 입력하여 상품을 선택할 수 있습니다.",
     publicItems: "공개 상품",
     empty: "아직 공개된 상품이 없습니다.",
     actions: {
@@ -51,7 +51,7 @@ export const copy = {
   itemDetail: {
     eyebrow: "Item Detail",
     submitted:
-      "상품이 등록되었습니다. 관리자 승인 전까지 공개 목록에는 표시되지 않습니다."
+      "상품이 등록되었습니다. 관리자 승인을 기다려주세요."
   },
   itemForm: {
     eyebrow: "Donation",
@@ -90,7 +90,7 @@ export const copy = {
   admin: {
     eyebrow: "Admin",
     loginTitle: "관리자 로그인",
-    loginLead: "기본 비밀번호는 환경 변수 ADMIN_PASSWORD로 설정합니다.",
+    loginLead: "비밀번호를 입력해주세요.",
     loginError: "비밀번호가 올바르지 않습니다.",
     login: "로그인",
     title: "관리자 페이지",
