@@ -144,6 +144,27 @@ h3 {
   margin-top: 12px;
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-bar a {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.filter-bar a.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 .grid {
   display: grid;
   gap: 14px;
