@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { copy } from "@/lib/copy";
 import { deliveryLabels, statusClass, statusLabels } from "@/lib/labels";
 import { getItem } from "@/lib/store";
 
@@ -23,21 +24,20 @@ export default async function ItemDetailPage({
     <main className="page stack">
       {submitted ? (
         <p className="notice">
-          상품이 등록되었습니다. 관리자 승인 전까지 공개 목록에는 표시되지
-          않습니다.
+          {copy.itemDetail.submitted}
         </p>
       ) : null}
 
       <section className="detail">
         {item.imageUrls.length > 0 ? (
           <div className="image-gallery">
-            <img src={item.imageUrls[0]} alt={`${item.title} 이미지`} />
+            <img src={item.imageUrls[0]} alt={copy.common.imageAlt(item.title)} />
             {item.imageUrls.length > 1 ? (
-              <div className="image-thumbs" aria-label="상품 이미지 목록">
+              <div className="image-thumbs" aria-label={copy.common.imageListLabel}>
                 {item.imageUrls.slice(1).map((imageUrl, index) => (
                   <img
                     src={imageUrl}
-                    alt={`${item.title} 이미지 ${index + 2}`}
+                    alt={copy.common.imageAlt(item.title, index + 2)}
                     key={imageUrl}
                   />
                 ))}
@@ -45,11 +45,11 @@ export default async function ItemDetailPage({
             ) : null}
           </div>
         ) : (
-          <div className="image-placeholder">NO IMAGE</div>
+          <div className="image-placeholder">{copy.common.noImage}</div>
         )}
 
         <div className="stack">
-          <p className="eyebrow">Item Detail</p>
+          <p className="eyebrow">{copy.itemDetail.eyebrow}</p>
           <h1>{item.title}</h1>
           <div className="meta-row">
             <span className={`badge ${statusClass(item.status)}`}>

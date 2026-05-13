@@ -1,10 +1,8 @@
 import { createItemAction } from "@/app/actions";
+import { copy } from "@/lib/copy";
+import { deliveryLabels } from "@/lib/labels";
 
-const errorMessages: Record<string, string> = {
-  type: "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
-  size: "이미지는 10MB 이하만 업로드할 수 있습니다.",
-  count: "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다."
-};
+const errorMessages: Record<string, string> = copy.itemForm.errors;
 
 export default async function NewItemPage({
   searchParams
@@ -16,11 +14,9 @@ export default async function NewItemPage({
   return (
     <main className="page stack">
       <section>
-        <p className="eyebrow">Donation</p>
-        <h1>상품 등록</h1>
-        <p className="lead">
-          등록된 상품은 관리자 승인 전까지 공개 상품 목록에 표시되지 않습니다.
-        </p>
+        <p className="eyebrow">{copy.itemForm.eyebrow}</p>
+        <h1>{copy.itemForm.title}</h1>
+        <p className="lead">{copy.itemForm.lead}</p>
       </section>
 
       {error && errorMessages[error] ? (
@@ -29,41 +25,41 @@ export default async function NewItemPage({
 
       <form className="form" action={createItemAction}>
         <div className="field">
-          <label htmlFor="title">상품명</label>
+          <label htmlFor="title">{copy.fields.itemTitle}</label>
           <input id="title" name="title" required />
         </div>
 
         <div className="field">
-          <label htmlFor="description">상품 설명</label>
+          <label htmlFor="description">{copy.fields.itemDescription}</label>
           <textarea id="description" name="description" required />
         </div>
 
         <div className="field">
-          <label htmlFor="condition">상품 상태</label>
+          <label htmlFor="condition">{copy.fields.itemCondition}</label>
           <input id="condition" name="condition" required />
         </div>
 
         <div className="field">
-          <label htmlFor="image">상품 이미지</label>
+          <label htmlFor="image">{copy.fields.itemImage}</label>
           <input id="image" name="image" type="file" accept="image/*" multiple />
         </div>
 
         <div className="field">
-          <label htmlFor="deliveryMethod">전달 방식</label>
+          <label htmlFor="deliveryMethod">{copy.fields.deliveryMethod}</label>
           <select id="deliveryMethod" name="deliveryMethod" defaultValue="shipping">
-            <option value="shipping">배송</option>
-            <option value="direct">직거래</option>
-            <option value="negotiable">협의</option>
+            <option value="shipping">{deliveryLabels.shipping}</option>
+            <option value="direct">{deliveryLabels.direct}</option>
+            <option value="negotiable">{deliveryLabels.negotiable}</option>
           </select>
         </div>
 
         <div className="field">
-          <label htmlFor="donorContact">후원자 연락처</label>
+          <label htmlFor="donorContact">{copy.fields.donorContact}</label>
           <input id="donorContact" name="donorContact" required />
         </div>
 
         <button className="button primary" type="submit">
-          등록하기
+          {copy.itemForm.submit}
         </button>
       </form>
     </main>

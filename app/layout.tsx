@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { copy } from "@/lib/copy";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "기타 채널 바자회",
-  description: "아카라이브 기타 채널 커뮤니티 바자회 운영 도구"
+  title: copy.app.title,
+  description: copy.app.description
 };
 
 export default function RootLayout({
@@ -18,12 +19,12 @@ export default function RootLayout({
         <div className="shell">
           <header className="topbar">
             <Link className="brand" href="/">
-              기타 채널 바자회
+              {copy.app.title}
             </Link>
-            <nav className="nav" aria-label="주요 메뉴">
-              <Link href="/items">상품 목록</Link>
-              <Link href="/items/new">상품 등록</Link>
-              <Link href="/winner">당첨자</Link>
+            <nav className="nav" aria-label={copy.app.navLabel}>
+              <Link href="/items">{copy.app.nav.items}</Link>
+              <Link href="/items/new">{copy.app.nav.newItem}</Link>
+              <Link href="/winner">{copy.app.nav.winner}</Link>
             </nav>
           </header>
           {children}

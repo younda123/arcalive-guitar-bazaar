@@ -10,6 +10,7 @@ import {
   updateWinnerAction,
   winnerCanSelectAction
 } from "@/app/actions";
+import { copy } from "@/lib/copy";
 import { deliveryLabels, statusLabels } from "@/lib/labels";
 import { readStore, sortItems } from "@/lib/store";
 import type { ItemStatus } from "@/lib/types";
@@ -23,14 +24,7 @@ const statuses: ItemStatus[] = [
   "deleted"
 ];
 
-const adminErrors: Record<string, string> = {
-  "image-empty": "교체할 이미지를 선택해 주세요.",
-  "image-size": "이미지는 10MB 이하만 업로드할 수 있습니다.",
-  "image-count": "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다.",
-  "image-type": "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
-  "item-update": "상품 정보를 수정하지 못했습니다.",
-  "winner-code": "이미 사용 중인 당첨자 코드입니다."
-};
+const adminErrors: Record<string, string> = copy.admin.errors;
 
 export default async function AdminPage({
   searchParams
@@ -44,20 +38,18 @@ export default async function AdminPage({
     return (
       <main className="page stack">
         <section>
-          <p className="eyebrow">Admin</p>
-          <h1>관리자 로그인</h1>
-          <p className="lead">
-            기본 비밀번호는 환경 변수 ADMIN_PASSWORD로 설정합니다.
-          </p>
+          <p className="eyebrow">{copy.admin.eyebrow}</p>
+          <h1>{copy.admin.loginTitle}</h1>
+          <p className="lead">{copy.admin.loginLead}</p>
         </section>
-        {error ? <p className="notice">비밀번호가 올바르지 않습니다.</p> : null}
+        {error ? <p className="notice">{copy.admin.loginError}</p> : null}
         <form className="form" action={adminLoginAction}>
           <div className="field">
-            <label htmlFor="password">관리자 비밀번호</label>
+            <label htmlFor="password">{copy.fields.adminPassword}</label>
             <input id="password" name="password" type="password" required />
           </div>
           <button className="button primary" type="submit">
-            로그인
+            {copy.admin.login}
           </button>
         </form>
       </main>
@@ -70,11 +62,11 @@ export default async function AdminPage({
   return (
     <main className="page stack">
       <section>
-        <p className="eyebrow">Admin</p>
-        <h1>관리자 페이지</h1>
+        <p className="eyebrow">{copy.admin.eyebrow}</p>
+        <h1>{copy.admin.title}</h1>
         <form action={adminLogoutAction}>
           <button className="button" type="submit">
-            로그아웃
+            {copy.admin.logout}
           </button>
         </form>
       </section>
@@ -84,7 +76,7 @@ export default async function AdminPage({
       ) : null}
 
       <section className="section stack">
-        <h2>상품 관리</h2>
+        <h2>{copy.admin.itemManagement}</h2>
         <div className="admin-list">
           {items.map((item) => (
             <article className="admin-panel" key={item.id}>
@@ -103,31 +95,31 @@ export default async function AdminPage({
               <form className="admin-edit-form" action={updateItemAction}>
                 <input type="hidden" name="id" value={item.id} />
                 <label>
-                  상품명
+                  {copy.fields.itemTitle}
                   <input name="title" defaultValue={item.title} required />
                 </label>
                 <label>
-                  상품 상태
+                  {copy.fields.itemCondition}
                   <input name="condition" defaultValue={item.condition} required />
                 </label>
                 <label>
-                  상품 설명
+                  {copy.fields.itemDescription}
                   <textarea name="description" defaultValue={item.description} required />
                 </label>
                 <label>
-                  전달 방식
+                  {copy.fields.deliveryMethod}
                   <select name="deliveryMethod" defaultValue={item.deliveryMethod}>
-                    <option value="shipping">배송</option>
-                    <option value="direct">직거래</option>
-                    <option value="negotiable">협의</option>
+                    <option value="shipping">{deliveryLabels.shipping}</option>
+                    <option value="direct">{deliveryLabels.direct}</option>
+                    <option value="negotiable">{deliveryLabels.negotiable}</option>
                   </select>
                 </label>
                 <label>
-                  후원자 연락처
+                  {copy.fields.donorContact}
                   <input name="donorContact" defaultValue={item.donorContact} required />
                 </label>
                 <button className="button" type="submit">
-                  상품 정보 수정
+                  {copy.admin.updateItem}
                 </button>
               </form>
 
@@ -135,11 +127,11 @@ export default async function AdminPage({
                 <form className="admin-edit-form" action={updateItemImageAction}>
                   <input type="hidden" name="id" value={item.id} />
                   <label>
-                    이미지 교체
+                    {copy.admin.replaceImage}
                     <input name="image" type="file" accept="image/*" multiple required />
                   </label>
                   <button className="button" type="submit">
-                    이미지 교체
+                    {copy.admin.replaceImage}
                   </button>
                 </form>
 
@@ -153,7 +145,7 @@ export default async function AdminPage({
                     ))}
                   </select>
                   <button className="button" type="submit">
-                    상태 저장
+                    {copy.admin.saveStatus}
                   </button>
                 </form>
 
@@ -163,7 +155,7 @@ export default async function AdminPage({
                       <input type="hidden" name="id" value={item.id} />
                       <input type="hidden" name="status" value="approved" />
                       <button className="button primary" type="submit">
-                        승인
+                        {copy.admin.approve}
                       </button>
                     </form>
                   ) : null}
@@ -173,14 +165,14 @@ export default async function AdminPage({
                         <input type="hidden" name="id" value={item.id} />
                         <input type="hidden" name="status" value="completed" />
                         <button className="button primary" type="submit">
-                          전달 완료
+                          {copy.admin.completeDelivery}
                         </button>
                       </form>
                       <form action={itemStatusAction}>
                         <input type="hidden" name="id" value={item.id} />
                         <input type="hidden" name="status" value="approved" />
                         <button className="button" type="submit">
-                          선택 취소
+                          {copy.admin.cancelSelection}
                         </button>
                       </form>
                     </>
@@ -190,7 +182,7 @@ export default async function AdminPage({
                       <input type="hidden" name="id" value={item.id} />
                       <input type="hidden" name="status" value="hidden" />
                       <button className="button" type="submit">
-                        숨김
+                        {copy.admin.hide}
                       </button>
                     </form>
                   ) : null}
@@ -202,32 +194,32 @@ export default async function AdminPage({
       </section>
 
       <section className="section stack">
-        <h2>당첨자 등록</h2>
+        <h2>{copy.admin.winnerCreate}</h2>
         <form className="form" action={createWinnerAction}>
           <div className="field">
-            <label htmlFor="name">당첨자명</label>
+            <label htmlFor="name">{copy.fields.winnerName}</label>
             <input id="name" name="name" required />
           </div>
           <div className="field">
-            <label htmlFor="rank">순위</label>
+            <label htmlFor="rank">{copy.fields.winnerRank}</label>
             <input id="rank" name="rank" type="number" min="1" required />
           </div>
           <div className="field">
-            <label htmlFor="code">코드</label>
+            <label htmlFor="code">{copy.fields.winnerCode}</label>
             <input id="code" name="code" required />
           </div>
           <label className="meta-row">
             <input name="canSelect" type="checkbox" defaultChecked />
-            선택 가능
+            {copy.admin.canSelect}
           </label>
           <button className="button primary" type="submit">
-            당첨자 등록
+            {copy.admin.createWinner}
           </button>
         </form>
       </section>
 
       <section className="section stack">
-        <h2>선택 결과</h2>
+        <h2>{copy.admin.selectionResults}</h2>
         <div className="admin-list compact">
           {store.winners.map((winner) => {
             const item = store.items.find(
@@ -238,24 +230,24 @@ export default async function AdminPage({
                 <div className="admin-summary">
                   <div>
                     <h3>{winner.name}</h3>
-                    <p>{winner.rank}위 · 코드 {winner.code}</p>
+                    <p>{copy.admin.winnerCodeLine(winner.rank, winner.code)}</p>
                   </div>
                   <div className="meta-row">
                     <span className="badge">
-                      {winner.canSelect ? "선택 가능" : "선택 대기"}
+                      {winner.canSelect ? copy.admin.canSelect : copy.admin.selectionWaiting}
                     </span>
-                    <span className="badge">{item?.title ?? "선택 상품 없음"}</span>
+                    <span className="badge">{item?.title ?? copy.admin.noSelectedItem}</span>
                   </div>
                 </div>
 
                 <form className="admin-edit-form" action={updateWinnerAction}>
                   <input type="hidden" name="id" value={winner.id} />
                   <label>
-                    당첨자명
+                    {copy.fields.winnerName}
                     <input name="name" defaultValue={winner.name} required />
                   </label>
                   <label>
-                    순위
+                    {copy.fields.winnerRank}
                     <input
                       name="rank"
                       type="number"
@@ -265,7 +257,7 @@ export default async function AdminPage({
                     />
                   </label>
                   <label>
-                    코드
+                    {copy.fields.winnerCode}
                     <input name="code" defaultValue={winner.code} required />
                   </label>
                   <label className="meta-row">
@@ -274,10 +266,10 @@ export default async function AdminPage({
                       type="checkbox"
                       defaultChecked={winner.canSelect}
                     />
-                    선택 가능
+                    {copy.admin.canSelect}
                   </label>
                   <button className="button" type="submit">
-                    당첨자 수정
+                    {copy.admin.updateWinner}
                   </button>
                 </form>
 
@@ -290,16 +282,16 @@ export default async function AdminPage({
                         type="checkbox"
                         defaultChecked={winner.canSelect}
                       />
-                      선택 가능
+                      {copy.admin.canSelect}
                     </label>
                     <button className="button" type="submit">
-                      선택 권한 저장
+                      {copy.admin.saveSelectionPermission}
                     </button>
                   </form>
                   <form action={deleteWinnerAction}>
                     <input type="hidden" name="id" value={winner.id} />
                     <button className="button danger" type="submit">
-                      당첨자 삭제
+                      {copy.admin.deleteWinner}
                     </button>
                   </form>
                 </div>

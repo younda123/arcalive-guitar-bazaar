@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ItemCard } from "@/components/item-card";
+import { copy } from "@/lib/copy";
 import { statusLabels } from "@/lib/labels";
 import { listPublicItems } from "@/lib/store";
 import type { ItemStatus } from "@/lib/types";
@@ -7,7 +8,7 @@ import type { ItemStatus } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 const filters: Array<{ href: string; label: string; status?: ItemStatus }> = [
-  { href: "/items", label: "전체" },
+  { href: "/items", label: copy.items.all },
   { href: "/items?status=approved", label: statusLabels.approved, status: "approved" },
   { href: "/items?status=selected", label: statusLabels.selected, status: "selected" },
   { href: "/items?status=completed", label: statusLabels.completed, status: "completed" }
@@ -30,11 +31,11 @@ export default async function ItemsPage({
   return (
     <main className="page stack">
       <section>
-        <p className="eyebrow">Items</p>
-        <h1>상품 목록</h1>
+        <p className="eyebrow">{copy.items.eyebrow}</p>
+        <h1>{copy.items.title}</h1>
       </section>
 
-      <nav className="filter-bar" aria-label="상품 상태 필터">
+      <nav className="filter-bar" aria-label={copy.items.filterLabel}>
         {filters.map((filter) => (
           <Link
             className={
@@ -57,7 +58,7 @@ export default async function ItemsPage({
           ))}
         </div>
       ) : (
-        <p className="empty">조건에 맞는 상품이 없습니다.</p>
+        <p className="empty">{copy.items.empty}</p>
       )}
     </main>
   );

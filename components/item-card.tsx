@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { copy } from "@/lib/copy";
 import { deliveryLabels, statusClass, statusLabels } from "@/lib/labels";
 import type { Item } from "@/lib/types";
 
@@ -6,9 +7,9 @@ export function ItemCard({ item }: { item: Item }) {
   return (
     <article className="item-card">
       {item.imageUrl ? (
-        <img src={item.imageUrl} alt={`${item.title} 이미지`} />
+        <img src={item.imageUrl} alt={copy.common.imageAlt(item.title)} />
       ) : (
-        <div className="image-placeholder">NO IMAGE</div>
+        <div className="image-placeholder">{copy.common.noImage}</div>
       )}
       <div className="card-body">
         <h3>{item.title}</h3>
@@ -19,7 +20,7 @@ export function ItemCard({ item }: { item: Item }) {
           <span className="badge">{deliveryLabels[item.deliveryMethod]}</span>
         </div>
         <Link className="button" href={`/items/${item.id}`}>
-          상세보기
+          {copy.items.detail}
         </Link>
       </div>
     </article>
