@@ -76,7 +76,11 @@ export async function enterWinnerAction(formData: FormData) {
 export async function selectItemAction(formData: FormData) {
   const code = getString(formData, "code");
   const itemId = getString(formData, "itemId");
-  await selectItemForWinner(code, itemId);
+  try {
+    await selectItemForWinner(code, itemId);
+  } catch {
+    redirect(`/winner/${encodeURIComponent(code)}?error=select`);
+  }
   redirect(`/winner/${encodeURIComponent(code)}?selected=1`);
 }
 
@@ -111,12 +115,16 @@ export async function itemStatusAction(formData: FormData) {
 }
 
 export async function createWinnerAction(formData: FormData) {
-  await createWinner({
-    name: getString(formData, "name"),
-    rank: Number(getString(formData, "rank")),
-    code: getString(formData, "code"),
-    canSelect: formData.get("canSelect") === "on"
-  });
+  try {
+    await createWinner({
+      name: getString(formData, "name"),
+      rank: Number(getString(formData, "rank")),
+      code: getString(formData, "code"),
+      canSelect: formData.get("canSelect") === "on"
+    });
+  } catch {
+    redirect("/admin?error=winner-code");
+  }
   redirect("/admin");
 }
 

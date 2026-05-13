@@ -10,10 +10,10 @@ export default async function WinnerPage({
   searchParams
 }: {
   params: Promise<{ code: string }>;
-  searchParams: Promise<{ selected?: string }>;
+  searchParams: Promise<{ error?: string; selected?: string }>;
 }) {
   const { code } = await params;
-  const { selected } = await searchParams;
+  const { error, selected } = await searchParams;
   const winner = await getWinnerByCode(decodeURIComponent(code));
   const selectableItems = await listSelectableItems();
   const selectedItem = winner?.selectedItemId
@@ -32,6 +32,12 @@ export default async function WinnerPage({
   return (
     <main className="page stack">
       {selected ? <p className="notice">상품 선택이 완료되었습니다.</p> : null}
+      {error === "select" ? (
+        <p className="notice">
+          상품을 선택할 수 없습니다. 이미 선택했거나 선택 권한이 닫혔을 수
+          있습니다.
+        </p>
+      ) : null}
 
       <section>
         <p className="eyebrow">Winner Page</p>

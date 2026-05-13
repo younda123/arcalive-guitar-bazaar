@@ -19,6 +19,10 @@ const statuses: ItemStatus[] = [
   "deleted"
 ];
 
+const adminErrors: Record<string, string> = {
+  "winner-code": "이미 사용 중인 당첨자 코드입니다."
+};
+
 export default async function AdminPage({
   searchParams
 }: {
@@ -66,6 +70,10 @@ export default async function AdminPage({
         </form>
       </section>
 
+      {error && adminErrors[error] ? (
+        <p className="notice">{adminErrors[error]}</p>
+      ) : null}
+
       <section className="section stack">
         <h2>상품 관리</h2>
         <div className="table-wrap">
@@ -77,6 +85,7 @@ export default async function AdminPage({
                 <th>전달</th>
                 <th>후원자 연락처</th>
                 <th>상태 변경</th>
+                <th>빠른 작업</th>
               </tr>
             </thead>
             <tbody>
@@ -104,6 +113,46 @@ export default async function AdminPage({
                         저장
                       </button>
                     </form>
+                  </td>
+                  <td>
+                    <div className="actions">
+                      {item.status === "pending" ? (
+                        <form action={itemStatusAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <input type="hidden" name="status" value="approved" />
+                          <button className="button primary" type="submit">
+                            승인
+                          </button>
+                        </form>
+                      ) : null}
+                      {item.status === "selected" ? (
+                        <>
+                          <form action={itemStatusAction}>
+                            <input type="hidden" name="id" value={item.id} />
+                            <input type="hidden" name="status" value="completed" />
+                            <button className="button primary" type="submit">
+                              전달 완료
+                            </button>
+                          </form>
+                          <form action={itemStatusAction}>
+                            <input type="hidden" name="id" value={item.id} />
+                            <input type="hidden" name="status" value="approved" />
+                            <button className="button" type="submit">
+                              선택 취소
+                            </button>
+                          </form>
+                        </>
+                      ) : null}
+                      {item.status === "approved" ? (
+                        <form action={itemStatusAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <input type="hidden" name="status" value="hidden" />
+                          <button className="button" type="submit">
+                            숨김
+                          </button>
+                        </form>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))}
