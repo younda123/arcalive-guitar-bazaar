@@ -30,7 +30,7 @@ export const copy = {
   },
   home: {
     eyebrow: "Arcalive Guitar Bazaar",
-    title: "집에 남는 아이템을 서로서로 나누는 바자회",
+    title: "2026 기타 채널 바자회",
     lead:
       "상품 등록 후 운영자가 승인한 물품만 공개 상품 목록에 표시됩니다. 당첨자 선정은 무작위 추첨으로 이루어지며, 당첨자는 운영자가 발급한 코드를 입력하여 상품을 선택할 수 있습니다.",
     publicItems: "공개 상품",
