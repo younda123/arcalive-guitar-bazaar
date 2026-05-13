@@ -3,6 +3,7 @@
 ## 1. 운영 전 필수 점검
 
 - `.env`의 `ADMIN_PASSWORD`를 실제 운영용 비밀번호로 변경
+- 상단 메뉴에서 관리자 링크 숨김 상태 확인
 - `data/bazaar.db`와 `public/uploads/` 백업 경로 확인
 - 미니 PC 재부팅 후 `docker compose up -d`로 정상 복구되는지 확인
 - 관리자 페이지에서 상품 등록, 승인, 선택 취소, 전달 완료 흐름 확인

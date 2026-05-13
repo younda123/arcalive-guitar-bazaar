@@ -24,7 +24,6 @@ export default function RootLayout({
               <Link href="/items">상품 목록</Link>
               <Link href="/items/new">상품 등록</Link>
               <Link href="/winner">당첨자</Link>
-              <Link href="/admin">관리자</Link>
             </nav>
           </header>
           {children}
