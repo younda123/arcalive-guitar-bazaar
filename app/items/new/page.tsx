@@ -1,6 +1,17 @@
 import { createItemAction } from "@/app/actions";
 
-export default function NewItemPage() {
+const errorMessages: Record<string, string> = {
+  type: "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
+  size: "이미지는 5MB 이하만 업로드할 수 있습니다."
+};
+
+export default async function NewItemPage({
+  searchParams
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <main className="page stack">
       <section>
@@ -10,6 +21,10 @@ export default function NewItemPage() {
           등록된 상품은 관리자 승인 전까지 공개 상품 목록에 표시되지 않습니다.
         </p>
       </section>
+
+      {error && errorMessages[error] ? (
+        <p className="notice">{errorMessages[error]}</p>
+      ) : null}
 
       <form className="form" action={createItemAction}>
         <div className="field">
@@ -28,8 +43,8 @@ export default function NewItemPage() {
         </div>
 
         <div className="field">
-          <label htmlFor="imageUrl">상품 이미지 URL</label>
-          <input id="imageUrl" name="imageUrl" type="url" />
+          <label htmlFor="image">상품 이미지</label>
+          <input id="image" name="image" type="file" accept="image/*" />
         </div>
 
         <div className="field">

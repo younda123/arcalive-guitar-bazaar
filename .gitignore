@@ -1,6 +1,8 @@
 .next
 node_modules
 data/store.json
+public/uploads/*
+!public/uploads/.gitkeep
 .env
 .env.local
 *.log

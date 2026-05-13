@@ -1,7 +1,9 @@
 "use server";
 
+import { mkdir, writeFile } from "fs/promises";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import path from "path";
 import {
   createItem,
   createWinner,
@@ -17,12 +19,49 @@ function getString(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
+async function saveUploadedImage(formData: FormData) {
+  const image = formData.get("image");
+  if (!(image instanceof File) || image.size === 0) {
+    return { imageUrl: "" };
+  }
+
+  const allowedTypes = new Map([
+    ["image/jpeg", "jpg"],
+    ["image/png", "png"],
+    ["image/webp", "webp"],
+    ["image/gif", "gif"]
+  ]);
+  const extension = allowedTypes.get(image.type);
+  if (!extension) {
+    return { error: "type" };
+  }
+
+  const maxSize = 5 * 1024 * 1024;
+  if (image.size > maxSize) {
+    return { error: "size" };
+  }
+
+  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  const fileName = `${crypto.randomUUID()}.${extension}`;
+  const bytes = Buffer.from(await image.arrayBuffer());
+
+  await mkdir(uploadDir, { recursive: true });
+  await writeFile(path.join(uploadDir, fileName), bytes);
+
+  return { imageUrl: `/uploads/${fileName}` };
+}
+
 export async function createItemAction(formData: FormData) {
+  const upload = await saveUploadedImage(formData);
+  if (upload.error) {
+    redirect(`/items/new?error=${upload.error}`);
+  }
+
   const item = await createItem({
     title: getString(formData, "title"),
     description: getString(formData, "description"),
     condition: getString(formData, "condition"),
-    imageUrl: getString(formData, "imageUrl"),
+    imageUrl: upload.imageUrl,
     deliveryMethod: getString(formData, "deliveryMethod") as DeliveryMethod,
     donorContact: getString(formData, "donorContact")
   });
