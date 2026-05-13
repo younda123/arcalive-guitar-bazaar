@@ -2,7 +2,7 @@ import { createItemAction } from "@/app/actions";
 
 const errorMessages: Record<string, string> = {
   type: "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
-  size: "이미지는 5MB 이하만 업로드할 수 있습니다."
+  size: "이미지는 10MB 이하만 업로드할 수 있습니다."
 };
 
 export default async function NewItemPage({
