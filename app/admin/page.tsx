@@ -2,8 +2,11 @@ import {
   adminLoginAction,
   adminLogoutAction,
   createWinnerAction,
+  deleteWinnerAction,
   isAdmin,
   itemStatusAction,
+  updateItemAction,
+  updateWinnerAction,
   winnerCanSelectAction
 } from "@/app/actions";
 import { deliveryLabels, statusLabels } from "@/lib/labels";
@@ -20,6 +23,7 @@ const statuses: ItemStatus[] = [
 ];
 
 const adminErrors: Record<string, string> = {
+  "item-update": "상품 정보를 수정하지 못했습니다.",
   "winner-code": "이미 사용 중인 당첨자 코드입니다."
 };
 
@@ -84,6 +88,7 @@ export default async function AdminPage({
                 <th>상태</th>
                 <th>전달</th>
                 <th>후원자 연락처</th>
+                <th>상품 수정</th>
                 <th>상태 변경</th>
                 <th>빠른 작업</th>
               </tr>
@@ -99,6 +104,38 @@ export default async function AdminPage({
                   <td>{statusLabels[item.status]}</td>
                   <td>{deliveryLabels[item.deliveryMethod]}</td>
                   <td>{item.donorContact}</td>
+                  <td>
+                    <form className="admin-edit-form" action={updateItemAction}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <input name="title" defaultValue={item.title} aria-label="상품명" required />
+                      <input
+                        name="condition"
+                        defaultValue={item.condition}
+                        aria-label="상품 상태"
+                        required
+                      />
+                      <textarea
+                        name="description"
+                        defaultValue={item.description}
+                        aria-label="상품 설명"
+                        required
+                      />
+                      <select name="deliveryMethod" defaultValue={item.deliveryMethod}>
+                        <option value="shipping">배송</option>
+                        <option value="direct">직거래</option>
+                        <option value="negotiable">협의</option>
+                      </select>
+                      <input
+                        name="donorContact"
+                        defaultValue={item.donorContact}
+                        aria-label="후원자 연락처"
+                        required
+                      />
+                      <button className="button" type="submit">
+                        수정
+                      </button>
+                    </form>
+                  </td>
                   <td>
                     <form className="inline-form" action={itemStatusAction}>
                       <input type="hidden" name="id" value={item.id} />
@@ -197,6 +234,8 @@ export default async function AdminPage({
                 <th>코드</th>
                 <th>선택 가능</th>
                 <th>선택 상품</th>
+                <th>당첨자 수정</th>
+                <th>삭제</th>
               </tr>
             </thead>
             <tbody>
@@ -226,6 +265,50 @@ export default async function AdminPage({
                       </form>
                     </td>
                     <td>{item?.title ?? "-"}</td>
+                    <td>
+                      <form className="admin-edit-form" action={updateWinnerAction}>
+                        <input type="hidden" name="id" value={winner.id} />
+                        <input
+                          name="name"
+                          defaultValue={winner.name}
+                          aria-label="당첨자명"
+                          required
+                        />
+                        <input
+                          name="rank"
+                          type="number"
+                          min="1"
+                          defaultValue={winner.rank}
+                          aria-label="순위"
+                          required
+                        />
+                        <input
+                          name="code"
+                          defaultValue={winner.code}
+                          aria-label="코드"
+                          required
+                        />
+                        <label className="meta-row">
+                          <input
+                            name="canSelect"
+                            type="checkbox"
+                            defaultChecked={winner.canSelect}
+                          />
+                          선택 가능
+                        </label>
+                        <button className="button" type="submit">
+                          수정
+                        </button>
+                      </form>
+                    </td>
+                    <td>
+                      <form action={deleteWinnerAction}>
+                        <input type="hidden" name="id" value={winner.id} />
+                        <button className="button danger" type="submit">
+                          삭제
+                        </button>
+                      </form>
+                    </td>
                   </tr>
                 );
               })}

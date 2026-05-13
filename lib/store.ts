@@ -285,6 +285,36 @@ export async function updateItemStatus(id: string, status: ItemStatus) {
   return getItem(id);
 }
 
+export async function updateItem(input: {
+  id: string;
+  title: string;
+  description: string;
+  condition: string;
+  deliveryMethod: DeliveryMethod;
+  donorContact: string;
+}) {
+  getDb().prepare(`
+    UPDATE items
+    SET title = ?,
+        description = ?,
+        condition = ?,
+        deliveryMethod = ?,
+        donorContact = ?,
+        updatedAt = ?
+    WHERE id = ?
+  `).run(
+    input.title,
+    input.description,
+    input.condition,
+    input.deliveryMethod,
+    input.donorContact,
+    now(),
+    input.id
+  );
+
+  return getItem(input.id);
+}
+
 export async function getWinnerByCode(code: string) {
   const winner = getDb()
     .prepare("SELECT * FROM winners WHERE lower(code) = lower(?)")
@@ -342,6 +372,52 @@ export async function updateWinnerCanSelect(id: string, canSelect: boolean) {
     | undefined;
 
   return winner ? toWinner(winner) : undefined;
+}
+
+export async function updateWinner(input: {
+  id: string;
+  name: string;
+  rank: number;
+  code: string;
+  canSelect: boolean;
+}) {
+  getDb().prepare(`
+    UPDATE winners
+    SET name = ?,
+        rank = ?,
+        code = ?,
+        canSelect = ?,
+        updatedAt = ?
+    WHERE id = ?
+  `).run(
+    input.name,
+    input.rank,
+    input.code.trim(),
+    input.canSelect ? 1 : 0,
+    now(),
+    input.id
+  );
+
+  const winner = getDb().prepare("SELECT * FROM winners WHERE id = ?").get(input.id) as
+    | DbWinner
+    | undefined;
+
+  return winner ? toWinner(winner) : undefined;
+}
+
+export async function deleteWinner(id: string) {
+  const database = getDb();
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    database.prepare(
+      "UPDATE items SET status = 'approved', selectedByWinnerId = NULL, updatedAt = ? WHERE selectedByWinnerId = ?"
+    ).run(now(), id);
+    database.prepare("DELETE FROM winners WHERE id = ?").run(id);
+    database.exec("COMMIT");
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 export async function selectItemForWinner(code: string, itemId: string) {

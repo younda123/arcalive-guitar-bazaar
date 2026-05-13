@@ -298,6 +298,27 @@ th {
   gap: 6px;
 }
 
+.admin-edit-form {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.admin-edit-form input,
+.admin-edit-form textarea,
+.admin-edit-form select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 36px;
+  padding: 8px 9px;
+  width: 100%;
+}
+
+.admin-edit-form textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
 .notice {
   background: #fff8e6;
   border: 1px solid #f0d28a;
