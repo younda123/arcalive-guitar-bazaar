@@ -290,39 +290,57 @@ h3 {
   gap: 14px;
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-table {
-  background: var(--panel);
-  border-collapse: collapse;
-  min-width: 860px;
-  width: 100%;
-}
-
-th,
-td {
-  border-bottom: 1px solid var(--line);
-  padding: 11px;
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  color: var(--muted);
-  font-size: 13px;
-}
-
 .inline-form {
+  align-items: center;
   display: inline-flex;
   gap: 6px;
 }
 
+.admin-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-list.compact {
+  gap: 10px;
+}
+
+.admin-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(180px, 0.9fr) minmax(280px, 1.25fr) minmax(240px, 1fr);
+  padding: 16px;
+}
+
+.winner-panel {
+  grid-template-columns: minmax(180px, 1fr) minmax(260px, 1fr) minmax(220px, 0.9fr);
+}
+
+.admin-summary {
+  align-content: start;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-summary p,
+.admin-contact {
+  color: var(--muted);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin-tools {
+  align-content: start;
+  display: grid;
+  gap: 10px;
+}
+
 .admin-edit-form {
   display: grid;
-  gap: 6px;
-  min-width: 220px;
+  gap: 8px;
 }
 
 .admin-edit-form input,
@@ -333,6 +351,27 @@ th {
   min-height: 36px;
   padding: 8px 9px;
   width: 100%;
+}
+
+.admin-edit-form label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 5px;
+}
+
+.admin-edit-form label.meta-row {
+  align-items: center;
+  color: var(--ink);
+  display: flex;
+  font-size: 14px;
+}
+
+.admin-edit-form input[type="checkbox"],
+.field input[type="checkbox"] {
+  min-height: auto;
+  width: auto;
 }
 
 .admin-edit-form textarea {
@@ -367,5 +406,28 @@ th {
 
   .detail {
     grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 34px;
+    line-height: 1.12;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .admin-panel,
+  .winner-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  h1 {
+    font-size: 32px;
   }
 }

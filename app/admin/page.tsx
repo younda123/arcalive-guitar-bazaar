@@ -84,137 +84,119 @@ export default async function AdminPage({
 
       <section className="section stack">
         <h2>상품 관리</h2>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>상품</th>
-                <th>상태</th>
-                <th>전달</th>
-                <th>후원자 연락처</th>
-                <th>상품 수정</th>
-                <th>이미지 교체</th>
-                <th>상태 변경</th>
-                <th>빠른 작업</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <strong>{item.title}</strong>
-                    <br />
-                    {item.condition}
-                  </td>
-                  <td>{statusLabels[item.status]}</td>
-                  <td>{deliveryLabels[item.deliveryMethod]}</td>
-                  <td>{item.donorContact}</td>
-                  <td>
-                    <form className="admin-edit-form" action={updateItemAction}>
+        <div className="admin-list">
+          {items.map((item) => (
+            <article className="admin-panel" key={item.id}>
+              <div className="admin-summary">
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.condition}</p>
+                </div>
+                <div className="meta-row">
+                  <span className="badge">{statusLabels[item.status]}</span>
+                  <span className="badge">{deliveryLabels[item.deliveryMethod]}</span>
+                </div>
+                <p className="admin-contact">{item.donorContact}</p>
+              </div>
+
+              <form className="admin-edit-form" action={updateItemAction}>
+                <input type="hidden" name="id" value={item.id} />
+                <label>
+                  상품명
+                  <input name="title" defaultValue={item.title} required />
+                </label>
+                <label>
+                  상품 상태
+                  <input name="condition" defaultValue={item.condition} required />
+                </label>
+                <label>
+                  상품 설명
+                  <textarea name="description" defaultValue={item.description} required />
+                </label>
+                <label>
+                  전달 방식
+                  <select name="deliveryMethod" defaultValue={item.deliveryMethod}>
+                    <option value="shipping">배송</option>
+                    <option value="direct">직거래</option>
+                    <option value="negotiable">협의</option>
+                  </select>
+                </label>
+                <label>
+                  후원자 연락처
+                  <input name="donorContact" defaultValue={item.donorContact} required />
+                </label>
+                <button className="button" type="submit">
+                  상품 정보 수정
+                </button>
+              </form>
+
+              <div className="admin-tools">
+                <form className="admin-edit-form" action={updateItemImageAction}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <label>
+                    이미지 교체
+                    <input name="image" type="file" accept="image/*" required />
+                  </label>
+                  <button className="button" type="submit">
+                    이미지 교체
+                  </button>
+                </form>
+
+                <form className="inline-form" action={itemStatusAction}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <select name="status" defaultValue={item.status}>
+                    {statuses.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabels[status]}
+                      </option>
+                    ))}
+                  </select>
+                  <button className="button" type="submit">
+                    상태 저장
+                  </button>
+                </form>
+
+                <div className="actions">
+                  {item.status === "pending" ? (
+                    <form action={itemStatusAction}>
                       <input type="hidden" name="id" value={item.id} />
-                      <input name="title" defaultValue={item.title} aria-label="상품명" required />
-                      <input
-                        name="condition"
-                        defaultValue={item.condition}
-                        aria-label="상품 상태"
-                        required
-                      />
-                      <textarea
-                        name="description"
-                        defaultValue={item.description}
-                        aria-label="상품 설명"
-                        required
-                      />
-                      <select name="deliveryMethod" defaultValue={item.deliveryMethod}>
-                        <option value="shipping">배송</option>
-                        <option value="direct">직거래</option>
-                        <option value="negotiable">협의</option>
-                      </select>
-                      <input
-                        name="donorContact"
-                        defaultValue={item.donorContact}
-                        aria-label="후원자 연락처"
-                        required
-                      />
-                      <button className="button" type="submit">
-                        수정
+                      <input type="hidden" name="status" value="approved" />
+                      <button className="button primary" type="submit">
+                        승인
                       </button>
                     </form>
-                  </td>
-                  <td>
-                    <form className="admin-edit-form" action={updateItemImageAction}>
+                  ) : null}
+                  {item.status === "selected" ? (
+                    <>
+                      <form action={itemStatusAction}>
+                        <input type="hidden" name="id" value={item.id} />
+                        <input type="hidden" name="status" value="completed" />
+                        <button className="button primary" type="submit">
+                          전달 완료
+                        </button>
+                      </form>
+                      <form action={itemStatusAction}>
+                        <input type="hidden" name="id" value={item.id} />
+                        <input type="hidden" name="status" value="approved" />
+                        <button className="button" type="submit">
+                          선택 취소
+                        </button>
+                      </form>
+                    </>
+                  ) : null}
+                  {item.status === "approved" ? (
+                    <form action={itemStatusAction}>
                       <input type="hidden" name="id" value={item.id} />
-                      <input
-                        name="image"
-                        type="file"
-                        accept="image/*"
-                        aria-label="상품 이미지"
-                        required
-                      />
+                      <input type="hidden" name="status" value="hidden" />
                       <button className="button" type="submit">
-                        교체
+                        숨김
                       </button>
                     </form>
-                  </td>
-                  <td>
-                    <form className="inline-form" action={itemStatusAction}>
-                      <input type="hidden" name="id" value={item.id} />
-                      <select name="status" defaultValue={item.status}>
-                        {statuses.map((status) => (
-                          <option key={status} value={status}>
-                            {statusLabels[status]}
-                          </option>
-                        ))}
-                      </select>
-                      <button className="button" type="submit">
-                        저장
-                      </button>
-                    </form>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      {item.status === "pending" ? (
-                        <form action={itemStatusAction}>
-                          <input type="hidden" name="id" value={item.id} />
-                          <input type="hidden" name="status" value="approved" />
-                          <button className="button primary" type="submit">
-                            승인
-                          </button>
-                        </form>
-                      ) : null}
-                      {item.status === "selected" ? (
-                        <>
-                          <form action={itemStatusAction}>
-                            <input type="hidden" name="id" value={item.id} />
-                            <input type="hidden" name="status" value="completed" />
-                            <button className="button primary" type="submit">
-                              전달 완료
-                            </button>
-                          </form>
-                          <form action={itemStatusAction}>
-                            <input type="hidden" name="id" value={item.id} />
-                            <input type="hidden" name="status" value="approved" />
-                            <button className="button" type="submit">
-                              선택 취소
-                            </button>
-                          </form>
-                        </>
-                      ) : null}
-                      {item.status === "approved" ? (
-                        <form action={itemStatusAction}>
-                          <input type="hidden" name="id" value={item.id} />
-                          <input type="hidden" name="status" value="hidden" />
-                          <button className="button" type="submit">
-                            숨김
-                          </button>
-                        </form>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -245,95 +227,84 @@ export default async function AdminPage({
 
       <section className="section stack">
         <h2>선택 결과</h2>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>당첨자</th>
-                <th>순위</th>
-                <th>코드</th>
-                <th>선택 가능</th>
-                <th>선택 상품</th>
-                <th>당첨자 수정</th>
-                <th>삭제</th>
-              </tr>
-            </thead>
-            <tbody>
-              {store.winners.map((winner) => {
-                const item = store.items.find(
-                  (candidate) => candidate.id === winner.selectedItemId
-                );
-                return (
-                  <tr key={winner.id}>
-                    <td>{winner.name}</td>
-                    <td>{winner.rank}</td>
-                    <td>{winner.code}</td>
-                    <td>
-                      <form className="inline-form" action={winnerCanSelectAction}>
-                        <input type="hidden" name="id" value={winner.id} />
-                        <label className="meta-row">
-                          <input
-                            name="canSelect"
-                            type="checkbox"
-                            defaultChecked={winner.canSelect}
-                          />
-                          가능
-                        </label>
-                        <button className="button" type="submit">
-                          저장
-                        </button>
-                      </form>
-                    </td>
-                    <td>{item?.title ?? "-"}</td>
-                    <td>
-                      <form className="admin-edit-form" action={updateWinnerAction}>
-                        <input type="hidden" name="id" value={winner.id} />
-                        <input
-                          name="name"
-                          defaultValue={winner.name}
-                          aria-label="당첨자명"
-                          required
-                        />
-                        <input
-                          name="rank"
-                          type="number"
-                          min="1"
-                          defaultValue={winner.rank}
-                          aria-label="순위"
-                          required
-                        />
-                        <input
-                          name="code"
-                          defaultValue={winner.code}
-                          aria-label="코드"
-                          required
-                        />
-                        <label className="meta-row">
-                          <input
-                            name="canSelect"
-                            type="checkbox"
-                            defaultChecked={winner.canSelect}
-                          />
-                          선택 가능
-                        </label>
-                        <button className="button" type="submit">
-                          수정
-                        </button>
-                      </form>
-                    </td>
-                    <td>
-                      <form action={deleteWinnerAction}>
-                        <input type="hidden" name="id" value={winner.id} />
-                        <button className="button danger" type="submit">
-                          삭제
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="admin-list compact">
+          {store.winners.map((winner) => {
+            const item = store.items.find(
+              (candidate) => candidate.id === winner.selectedItemId
+            );
+            return (
+              <article className="admin-panel winner-panel" key={winner.id}>
+                <div className="admin-summary">
+                  <div>
+                    <h3>{winner.name}</h3>
+                    <p>{winner.rank}위 · 코드 {winner.code}</p>
+                  </div>
+                  <div className="meta-row">
+                    <span className="badge">
+                      {winner.canSelect ? "선택 가능" : "선택 대기"}
+                    </span>
+                    <span className="badge">{item?.title ?? "선택 상품 없음"}</span>
+                  </div>
+                </div>
+
+                <form className="admin-edit-form" action={updateWinnerAction}>
+                  <input type="hidden" name="id" value={winner.id} />
+                  <label>
+                    당첨자명
+                    <input name="name" defaultValue={winner.name} required />
+                  </label>
+                  <label>
+                    순위
+                    <input
+                      name="rank"
+                      type="number"
+                      min="1"
+                      defaultValue={winner.rank}
+                      required
+                    />
+                  </label>
+                  <label>
+                    코드
+                    <input name="code" defaultValue={winner.code} required />
+                  </label>
+                  <label className="meta-row">
+                    <input
+                      name="canSelect"
+                      type="checkbox"
+                      defaultChecked={winner.canSelect}
+                    />
+                    선택 가능
+                  </label>
+                  <button className="button" type="submit">
+                    당첨자 수정
+                  </button>
+                </form>
+
+                <div className="admin-tools">
+                  <form className="inline-form" action={winnerCanSelectAction}>
+                    <input type="hidden" name="id" value={winner.id} />
+                    <label className="meta-row">
+                      <input
+                        name="canSelect"
+                        type="checkbox"
+                        defaultChecked={winner.canSelect}
+                      />
+                      선택 가능
+                    </label>
+                    <button className="button" type="submit">
+                      선택 권한 저장
+                    </button>
+                  </form>
+                  <form action={deleteWinnerAction}>
+                    <input type="hidden" name="id" value={winner.id} />
+                    <button className="button danger" type="submit">
+                      당첨자 삭제
+                    </button>
+                  </form>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </main>
