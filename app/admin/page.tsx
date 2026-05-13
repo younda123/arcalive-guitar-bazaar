@@ -6,6 +6,7 @@ import {
   isAdmin,
   itemStatusAction,
   updateItemAction,
+  updateItemImageAction,
   updateWinnerAction,
   winnerCanSelectAction
 } from "@/app/actions";
@@ -23,6 +24,9 @@ const statuses: ItemStatus[] = [
 ];
 
 const adminErrors: Record<string, string> = {
+  "image-empty": "교체할 이미지를 선택해 주세요.",
+  "image-size": "이미지는 5MB 이하만 업로드할 수 있습니다.",
+  "image-type": "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
   "item-update": "상품 정보를 수정하지 못했습니다.",
   "winner-code": "이미 사용 중인 당첨자 코드입니다."
 };
@@ -89,6 +93,7 @@ export default async function AdminPage({
                 <th>전달</th>
                 <th>후원자 연락처</th>
                 <th>상품 수정</th>
+                <th>이미지 교체</th>
                 <th>상태 변경</th>
                 <th>빠른 작업</th>
               </tr>
@@ -133,6 +138,21 @@ export default async function AdminPage({
                       />
                       <button className="button" type="submit">
                         수정
+                      </button>
+                    </form>
+                  </td>
+                  <td>
+                    <form className="admin-edit-form" action={updateItemImageAction}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <input
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        aria-label="상품 이미지"
+                        required
+                      />
+                      <button className="button" type="submit">
+                        교체
                       </button>
                     </form>
                   </td>

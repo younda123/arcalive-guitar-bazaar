@@ -10,6 +10,7 @@ import {
   deleteWinner,
   selectItemForWinner,
   updateItem,
+  updateItemImage,
   updateItemStatus,
   updateWinner,
   updateWinnerCanSelect
@@ -130,6 +131,20 @@ export async function updateItemAction(formData: FormData) {
   } catch {
     redirect("/admin?error=item-update");
   }
+  redirect("/admin");
+}
+
+export async function updateItemImageAction(formData: FormData) {
+  const upload = await saveUploadedImage(formData);
+  if (upload.error) {
+    redirect(`/admin?error=image-${upload.error}`);
+  }
+
+  if (!upload.imageUrl) {
+    redirect("/admin?error=image-empty");
+  }
+
+  await updateItemImage(getString(formData, "id"), upload.imageUrl);
   redirect("/admin");
 }
 

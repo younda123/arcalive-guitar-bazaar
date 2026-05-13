@@ -315,6 +315,16 @@ export async function updateItem(input: {
   return getItem(input.id);
 }
 
+export async function updateItemImage(id: string, imageUrl: string) {
+  getDb().prepare("UPDATE items SET imageUrl = ?, updatedAt = ? WHERE id = ?").run(
+    imageUrl || null,
+    now(),
+    id
+  );
+
+  return getItem(id);
+}
+
 export async function getWinnerByCode(code: string) {
   const winner = getDb()
     .prepare("SELECT * FROM winners WHERE lower(code) = lower(?)")
