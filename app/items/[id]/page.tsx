@@ -29,8 +29,21 @@ export default async function ItemDetailPage({
       ) : null}
 
       <section className="detail">
-        {item.imageUrl ? (
-          <img src={item.imageUrl} alt={`${item.title} 이미지`} />
+        {item.imageUrls.length > 0 ? (
+          <div className="image-gallery">
+            <img src={item.imageUrls[0]} alt={`${item.title} 이미지`} />
+            {item.imageUrls.length > 1 ? (
+              <div className="image-thumbs" aria-label="상품 이미지 목록">
+                {item.imageUrls.slice(1).map((imageUrl, index) => (
+                  <img
+                    src={imageUrl}
+                    alt={`${item.title} 이미지 ${index + 2}`}
+                    key={imageUrl}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         ) : (
           <div className="image-placeholder">NO IMAGE</div>
         )}

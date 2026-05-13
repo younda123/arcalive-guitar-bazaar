@@ -2,7 +2,8 @@ import { createItemAction } from "@/app/actions";
 
 const errorMessages: Record<string, string> = {
   type: "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
-  size: "이미지는 10MB 이하만 업로드할 수 있습니다."
+  size: "이미지는 10MB 이하만 업로드할 수 있습니다.",
+  count: "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다."
 };
 
 export default async function NewItemPage({
@@ -44,7 +45,7 @@ export default async function NewItemPage({
 
         <div className="field">
           <label htmlFor="image">상품 이미지</label>
-          <input id="image" name="image" type="file" accept="image/*" />
+          <input id="image" name="image" type="file" accept="image/*" multiple />
         </div>
 
         <div className="field">

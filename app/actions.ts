@@ -10,7 +10,7 @@ import {
   deleteWinner,
   selectItemForWinner,
   updateItem,
-  updateItemImage,
+  updateItemImages,
   updateItemStatus,
   updateWinner,
   updateWinnerCanSelect
@@ -18,45 +18,62 @@ import {
 import type { DeliveryMethod, ItemStatus } from "@/lib/types";
 
 const adminCookie = "bazaar_admin";
+const maxImageCount = 10;
+const maxImageSize = 10 * 1024 * 1024;
+const allowedImageTypes = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+  ["image/gif", "gif"]
+]);
 
 function getString(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
-async function saveUploadedImage(formData: FormData) {
-  const image = formData.get("image");
-  if (!(image instanceof File) || image.size === 0) {
-    return { imageUrl: "" };
+async function saveUploadedImages(formData: FormData) {
+  const images = formData
+    .getAll("image")
+    .filter((image): image is File => image instanceof File && image.size > 0);
+
+  if (images.length === 0) {
+    return { imageUrls: [] };
   }
 
-  const allowedTypes = new Map([
-    ["image/jpeg", "jpg"],
-    ["image/png", "png"],
-    ["image/webp", "webp"],
-    ["image/gif", "gif"]
-  ]);
-  const extension = allowedTypes.get(image.type);
-  if (!extension) {
-    return { error: "type" };
+  if (images.length > maxImageCount) {
+    return { error: "count" };
   }
 
-  const maxSize = 10 * 1024 * 1024;
-  if (image.size > maxSize) {
-    return { error: "size" };
+  const validImages: Array<{ file: File; extension: string }> = [];
+  for (const image of images) {
+    const extension = allowedImageTypes.get(image.type);
+    if (!extension) {
+      return { error: "type" };
+    }
+
+    if (image.size > maxImageSize) {
+      return { error: "size" };
+    }
+
+    validImages.push({ file: image, extension });
   }
 
   const uploadDir = path.join(process.cwd(), "public", "uploads");
-  const fileName = `${crypto.randomUUID()}.${extension}`;
-  const bytes = Buffer.from(await image.arrayBuffer());
-
   await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, fileName), bytes);
 
-  return { imageUrl: `/uploads/${fileName}` };
+  const imageUrls: string[] = [];
+  for (const image of validImages) {
+    const fileName = `${crypto.randomUUID()}.${image.extension}`;
+    const bytes = Buffer.from(await image.file.arrayBuffer());
+    await writeFile(path.join(uploadDir, fileName), bytes);
+    imageUrls.push(`/uploads/${fileName}`);
+  }
+
+  return { imageUrls };
 }
 
 export async function createItemAction(formData: FormData) {
-  const upload = await saveUploadedImage(formData);
+  const upload = await saveUploadedImages(formData);
   if (upload.error) {
     redirect(`/items/new?error=${upload.error}`);
   }
@@ -65,7 +82,7 @@ export async function createItemAction(formData: FormData) {
     title: getString(formData, "title"),
     description: getString(formData, "description"),
     condition: getString(formData, "condition"),
-    imageUrl: upload.imageUrl,
+    imageUrls: upload.imageUrls,
     deliveryMethod: getString(formData, "deliveryMethod") as DeliveryMethod,
     donorContact: getString(formData, "donorContact")
   });
@@ -135,16 +152,16 @@ export async function updateItemAction(formData: FormData) {
 }
 
 export async function updateItemImageAction(formData: FormData) {
-  const upload = await saveUploadedImage(formData);
+  const upload = await saveUploadedImages(formData);
   if (upload.error) {
     redirect(`/admin?error=image-${upload.error}`);
   }
 
-  if (!upload.imageUrl) {
+  if (!upload.imageUrls || upload.imageUrls.length === 0) {
     redirect("/admin?error=image-empty");
   }
 
-  await updateItemImage(getString(formData, "id"), upload.imageUrl);
+  await updateItemImages(getString(formData, "id"), upload.imageUrls);
   redirect("/admin");
 }
 

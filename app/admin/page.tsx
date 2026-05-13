@@ -26,6 +26,7 @@ const statuses: ItemStatus[] = [
 const adminErrors: Record<string, string> = {
   "image-empty": "교체할 이미지를 선택해 주세요.",
   "image-size": "이미지는 10MB 이하만 업로드할 수 있습니다.",
+  "image-count": "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다.",
   "image-type": "JPG, PNG, WebP, GIF 이미지만 업로드할 수 있습니다.",
   "item-update": "상품 정보를 수정하지 못했습니다.",
   "winner-code": "이미 사용 중인 당첨자 코드입니다."
@@ -135,7 +136,7 @@ export default async function AdminPage({
                   <input type="hidden" name="id" value={item.id} />
                   <label>
                     이미지 교체
-                    <input name="image" type="file" accept="image/*" required />
+                    <input name="image" type="file" accept="image/*" multiple required />
                   </label>
                   <button className="button" type="submit">
                     이미지 교체

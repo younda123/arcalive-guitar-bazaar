@@ -14,6 +14,7 @@ export type Item = {
   description: string;
   condition: string;
   imageUrl?: string;
+  imageUrls: string[];
   deliveryMethod: DeliveryMethod;
   status: ItemStatus;
   donorContact: string;

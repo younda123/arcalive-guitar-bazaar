@@ -54,11 +54,24 @@ export default async function WinnerPage({
         <section className="section stack">
           <h2>선택한 상품</h2>
           <div className="detail">
-            {selectedItem.imageUrl ? (
-              <img
-                src={selectedItem.imageUrl}
-                alt={`${selectedItem.title} 이미지`}
-              />
+            {selectedItem.imageUrls.length > 0 ? (
+              <div className="image-gallery">
+                <img
+                  src={selectedItem.imageUrls[0]}
+                  alt={`${selectedItem.title} 이미지`}
+                />
+                {selectedItem.imageUrls.length > 1 ? (
+                  <div className="image-thumbs" aria-label="상품 이미지 목록">
+                    {selectedItem.imageUrls.slice(1).map((imageUrl, index) => (
+                      <img
+                        src={imageUrl}
+                        alt={`${selectedItem.title} 이미지 ${index + 2}`}
+                        key={imageUrl}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             ) : (
               <div className="image-placeholder">NO IMAGE</div>
             )}

@@ -9,6 +9,7 @@ type DbItem = {
   description: string;
   condition: string;
   imageUrl: string | null;
+  imageUrls: string | null;
   deliveryMethod: string;
   status: string;
   donorContact: string;
@@ -34,6 +35,13 @@ const now = () => new Date().toISOString();
 let db: DatabaseSync | undefined;
 let initialized = false;
 
+function columnExists(database: DatabaseSync, table: string, column: string) {
+  const columns = database.prepare(`PRAGMA table_info(${table})`).all() as Array<{
+    name: string;
+  }>;
+  return columns.some((candidate) => candidate.name === column);
+}
+
 function getDb() {
   if (!db) {
     mkdirSync(path.dirname(dbPath), { recursive: true });
@@ -50,6 +58,7 @@ function getDb() {
         description TEXT NOT NULL,
         condition TEXT NOT NULL,
         imageUrl TEXT,
+        imageUrls TEXT,
         deliveryMethod TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending',
         donorContact TEXT NOT NULL,
@@ -69,6 +78,9 @@ function getDb() {
         updatedAt TEXT NOT NULL
       );
     `);
+    if (!columnExists(db, "items", "imageUrls")) {
+      db.exec("ALTER TABLE items ADD COLUMN imageUrls TEXT");
+    }
     seedData(db);
     initialized = true;
   }
@@ -144,10 +156,27 @@ function makeId(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
 }
 
+function parseImageUrls(item: Pick<DbItem, "imageUrl" | "imageUrls">) {
+  if (item.imageUrls) {
+    try {
+      const parsed = JSON.parse(item.imageUrls);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((value): value is string => typeof value === "string");
+      }
+    } catch {
+      return item.imageUrl ? [item.imageUrl] : [];
+    }
+  }
+
+  return item.imageUrl ? [item.imageUrl] : [];
+}
+
 function toItem(item: DbItem): Item {
+  const imageUrls = parseImageUrls(item);
   return {
     ...item,
-    imageUrl: item.imageUrl ?? undefined,
+    imageUrl: imageUrls[0] ?? undefined,
+    imageUrls,
     deliveryMethod: item.deliveryMethod as DeliveryMethod,
     status: item.status as ItemStatus,
     selectedByWinnerId: item.selectedByWinnerId ?? undefined
@@ -226,14 +255,17 @@ export async function createItem(input: {
   description: string;
   condition: string;
   imageUrl?: string;
+  imageUrls?: string[];
   deliveryMethod: DeliveryMethod;
   donorContact: string;
 }) {
   const timestamp = now();
+  const imageUrls = input.imageUrls ?? (input.imageUrl ? [input.imageUrl] : []);
   const item: DbItem = {
     id: makeId("item"),
     ...input,
-    imageUrl: input.imageUrl || null,
+    imageUrl: imageUrls[0] || null,
+    imageUrls: imageUrls.length > 0 ? JSON.stringify(imageUrls) : null,
     status: "pending",
     selectedByWinnerId: null,
     createdAt: timestamp,
@@ -242,16 +274,17 @@ export async function createItem(input: {
 
   getDb().prepare(`
     INSERT INTO items (
-      id, title, description, condition, imageUrl, deliveryMethod, status,
+      id, title, description, condition, imageUrl, imageUrls, deliveryMethod, status,
       donorContact, selectedByWinnerId, createdAt, updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     item.id,
     item.title,
     item.description,
     item.condition,
     item.imageUrl,
+    item.imageUrls,
     item.deliveryMethod,
     item.status,
     item.donorContact,
@@ -316,8 +349,13 @@ export async function updateItem(input: {
 }
 
 export async function updateItemImage(id: string, imageUrl: string) {
-  getDb().prepare("UPDATE items SET imageUrl = ?, updatedAt = ? WHERE id = ?").run(
-    imageUrl || null,
+  return updateItemImages(id, imageUrl ? [imageUrl] : []);
+}
+
+export async function updateItemImages(id: string, imageUrls: string[]) {
+  getDb().prepare("UPDATE items SET imageUrl = ?, imageUrls = ?, updatedAt = ? WHERE id = ?").run(
+    imageUrls[0] || null,
+    imageUrls.length > 0 ? JSON.stringify(imageUrls) : null,
     now(),
     id
   );

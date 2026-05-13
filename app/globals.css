@@ -279,6 +279,29 @@ h3 {
   grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
 }
 
+.image-gallery {
+  display: grid;
+  gap: 10px;
+}
+
+.image-gallery > img {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  width: 100%;
+}
+
+.image-thumbs {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.image-thumbs img {
+  aspect-ratio: 1;
+  object-fit: cover;
+  width: 100%;
+}
+
 .detail img,
 .detail .image-placeholder {
   border: 1px solid var(--line);
