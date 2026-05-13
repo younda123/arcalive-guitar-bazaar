@@ -47,3 +47,31 @@ If the tunnel is later moved into the same Docker network, route to:
 ```text
 http://guitar-bazaar:3000
 ```
+
+## Backup
+
+Run this from the repository root on the mini PC:
+
+```powershell
+.\scripts\backup.ps1
+```
+
+The script creates a timestamped zip under `backups/` containing:
+
+```text
+data/
+public/uploads/
+```
+
+To restore, stop the container first:
+
+```powershell
+docker compose down
+```
+
+Then extract the backup zip into the repository root so that `data/` and
+`public/uploads/` are restored, and start the app again:
+
+```powershell
+docker compose up -d
+```

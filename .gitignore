@@ -5,6 +5,7 @@ data/*.db
 data/*.db-journal
 data/*.db-shm
 data/*.db-wal
+backups/
 public/uploads/*
 !public/uploads/.gitkeep
 .env
