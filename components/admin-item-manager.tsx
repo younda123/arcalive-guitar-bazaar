@@ -157,7 +157,13 @@ export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {
               <form className="admin-edit-form" onSubmit={(event) => replaceImages(event, item.id)}>
                 <label>
                   {copy.admin.replaceImage}
-                  <input name="image" type="file" accept="image/*,.jpg,.jpeg" multiple required />
+                  <input
+                    name="image"
+                    type="file"
+                    accept="image/*,.jpg,.jpeg,.heic,.heif"
+                    multiple
+                    required
+                  />
                 </label>
                 <button className="button" disabled={savingId === item.id} type="submit">
                   {copy.admin.replaceImage}

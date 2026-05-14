@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import convertHeic from "heic-convert";
 
 const maxImageCount = 10;
 const maxImageSize = 10 * 1024 * 1024;
@@ -9,14 +10,18 @@ const allowedImageTypes = new Map([
   ["image/jpg", "jpg"],
   ["image/png", "png"],
   ["image/webp", "webp"],
-  ["image/gif", "gif"]
+  ["image/gif", "gif"],
+  ["image/heic", "heic"],
+  ["image/heif", "heif"]
 ]);
 const allowedImageExtensions = new Map([
   ["jpg", "jpg"],
   ["jpeg", "jpg"],
   ["png", "png"],
   ["webp", "webp"],
-  ["gif", "gif"]
+  ["gif", "gif"],
+  ["heic", "heic"],
+  ["heif", "heif"]
 ]);
 
 function getExtension(file: File) {
@@ -25,6 +30,12 @@ function getExtension(file: File) {
 
   const nameExtension = file.name.split(".").pop()?.toLowerCase();
   return nameExtension ? allowedImageExtensions.get(nameExtension) : undefined;
+}
+
+function toBuffer(value: Buffer | Uint8Array | ArrayBuffer) {
+  if (Buffer.isBuffer(value)) return value;
+  if (value instanceof ArrayBuffer) return Buffer.from(value);
+  return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
 }
 
 export async function saveUploadedImages(formData: FormData) {
@@ -59,9 +70,32 @@ export async function saveUploadedImages(formData: FormData) {
 
   const imageUrls: string[] = [];
   for (const image of validImages) {
-    const fileName = `${crypto.randomUUID()}.${image.extension}`;
     const bytes = Buffer.from(await image.file.arrayBuffer());
-    await writeFile(path.join(uploadDir, fileName), bytes);
+
+    let converted: { bytes: Buffer; extension: string };
+    try {
+      converted =
+        image.extension === "heic" || image.extension === "heif"
+          ? {
+              bytes: toBuffer(
+                await convertHeic({
+                  buffer: bytes,
+                  format: "JPEG",
+                  quality: 0.88
+                })
+              ),
+              extension: "jpg"
+            }
+          : {
+              bytes,
+              extension: image.extension
+            };
+    } catch {
+      return { error: "type" };
+    }
+
+    const fileName = `${crypto.randomUUID()}.${converted.extension}`;
+    await writeFile(path.join(uploadDir, fileName), converted.bytes);
     imageUrls.push(`/uploads/${fileName}`);
   }
 

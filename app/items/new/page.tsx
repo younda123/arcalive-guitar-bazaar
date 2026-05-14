@@ -41,7 +41,7 @@ export default async function NewItemPage({
 
         <div className="field">
           <label htmlFor="image">{copy.fields.itemImage}</label>
-          <input id="image" name="image" type="file" accept="image/*" multiple />
+          <input id="image" name="image" type="file" accept="image/*,.heic,.heif" multiple />
         </div>
 
         <div className="field">
