@@ -4,16 +4,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   createItem,
-  createWinner,
-  deleteWinner,
   selectItemForWinner,
-  updateItem,
-  updateItemImages,
-  updateItemStatus,
-  updateWinner,
-  updateWinnerCanSelect
 } from "@/lib/store";
-import type { DeliveryMethod, ItemStatus } from "@/lib/types";
+import type { DeliveryMethod } from "@/lib/types";
 import { saveUploadedImages } from "@/lib/uploads";
 
 const adminCookie = "bazaar_admin";
@@ -75,83 +68,6 @@ export async function adminLoginAction(formData: FormData) {
 export async function adminLogoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete(adminCookie);
-  redirect("/admin");
-}
-
-export async function itemStatusAction(formData: FormData) {
-  const id = getString(formData, "id");
-  const status = getString(formData, "status") as ItemStatus;
-  await updateItemStatus(id, status);
-  redirect("/admin");
-}
-
-export async function updateItemAction(formData: FormData) {
-  try {
-    await updateItem({
-      id: getString(formData, "id"),
-      title: getString(formData, "title"),
-      description: getString(formData, "description"),
-      condition: getString(formData, "condition"),
-      deliveryMethod: getString(formData, "deliveryMethod") as DeliveryMethod,
-      donorContact: getString(formData, "donorContact")
-    });
-  } catch {
-    redirect("/admin?error=item-update");
-  }
-  redirect("/admin");
-}
-
-export async function updateItemImageAction(formData: FormData) {
-  const upload = await saveUploadedImages(formData);
-  if (upload.error) {
-    redirect(`/admin?error=image-${upload.error}`);
-  }
-
-  if (!upload.imageUrls || upload.imageUrls.length === 0) {
-    redirect("/admin?error=image-empty");
-  }
-
-  await updateItemImages(getString(formData, "id"), upload.imageUrls);
-  redirect("/admin");
-}
-
-export async function createWinnerAction(formData: FormData) {
-  try {
-    await createWinner({
-      name: getString(formData, "name"),
-      rank: Number(getString(formData, "rank")),
-      code: getString(formData, "code"),
-      canSelect: formData.get("canSelect") === "on"
-    });
-  } catch {
-    redirect("/admin?error=winner-code");
-  }
-  redirect("/admin");
-}
-
-export async function winnerCanSelectAction(formData: FormData) {
-  const id = getString(formData, "id");
-  await updateWinnerCanSelect(id, formData.get("canSelect") === "on");
-  redirect("/admin");
-}
-
-export async function updateWinnerAction(formData: FormData) {
-  try {
-    await updateWinner({
-      id: getString(formData, "id"),
-      name: getString(formData, "name"),
-      rank: Number(getString(formData, "rank")),
-      code: getString(formData, "code"),
-      canSelect: formData.get("canSelect") === "on"
-    });
-  } catch {
-    redirect("/admin?error=winner-code");
-  }
-  redirect("/admin");
-}
-
-export async function deleteWinnerAction(formData: FormData) {
-  await deleteWinner(getString(formData, "id"));
   redirect("/admin");
 }
 

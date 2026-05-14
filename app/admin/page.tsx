@@ -1,15 +1,11 @@
 import {
   adminLoginAction,
   adminLogoutAction,
-  createWinnerAction,
-  deleteWinnerAction,
-  isAdmin,
-  updateWinnerAction,
-  winnerCanSelectAction
+  isAdmin
 } from "@/app/actions";
 import { AdminItemManager } from "@/components/admin-item-manager";
+import { AdminWinnerManager } from "@/components/admin-winner-manager";
 import { copy } from "@/lib/copy";
-import { statusLabels } from "@/lib/labels";
 import { readStore, sortItems } from "@/lib/store";
 
 const adminErrors: Record<string, string> = copy.admin.errors;
@@ -68,113 +64,7 @@ export default async function AdminPage({
         <AdminItemManager initialItems={items} />
       </section>
 
-      <section className="section stack">
-        <h2>{copy.admin.winnerCreate}</h2>
-        <form className="form" action={createWinnerAction}>
-          <div className="field">
-            <label htmlFor="name">{copy.fields.winnerName}</label>
-            <input id="name" name="name" required />
-          </div>
-          <div className="field">
-            <label htmlFor="rank">{copy.fields.winnerRank}</label>
-            <input id="rank" name="rank" type="number" min="1" required />
-          </div>
-          <div className="field">
-            <label htmlFor="code">{copy.fields.winnerCode}</label>
-            <input id="code" name="code" required />
-          </div>
-          <label className="meta-row">
-            <input name="canSelect" type="checkbox" defaultChecked />
-            {copy.admin.canSelect}
-          </label>
-          <button className="button primary" type="submit">
-            {copy.admin.createWinner}
-          </button>
-        </form>
-      </section>
-
-      <section className="section stack">
-        <h2>{copy.admin.selectionResults}</h2>
-        <div className="admin-list compact">
-          {store.winners.map((winner) => {
-            const item = store.items.find(
-              (candidate) => candidate.id === winner.selectedItemId
-            );
-            return (
-              <article className="admin-panel winner-panel" key={winner.id}>
-                <div className="admin-summary">
-                  <div>
-                    <h3>{winner.name}</h3>
-                    <p>{copy.admin.winnerCodeLine(winner.rank, winner.code)}</p>
-                  </div>
-                  <div className="meta-row">
-                    <span className="badge">
-                      {winner.canSelect ? copy.admin.canSelect : copy.admin.selectionWaiting}
-                    </span>
-                    <span className="badge">{item?.title ?? copy.admin.noSelectedItem}</span>
-                  </div>
-                </div>
-
-                <form className="admin-edit-form" action={updateWinnerAction}>
-                  <input type="hidden" name="id" value={winner.id} />
-                  <label>
-                    {copy.fields.winnerName}
-                    <input name="name" defaultValue={winner.name} required />
-                  </label>
-                  <label>
-                    {copy.fields.winnerRank}
-                    <input
-                      name="rank"
-                      type="number"
-                      min="1"
-                      defaultValue={winner.rank}
-                      required
-                    />
-                  </label>
-                  <label>
-                    {copy.fields.winnerCode}
-                    <input name="code" defaultValue={winner.code} required />
-                  </label>
-                  <label className="meta-row">
-                    <input
-                      name="canSelect"
-                      type="checkbox"
-                      defaultChecked={winner.canSelect}
-                    />
-                    {copy.admin.canSelect}
-                  </label>
-                  <button className="button" type="submit">
-                    {copy.admin.updateWinner}
-                  </button>
-                </form>
-
-                <div className="admin-tools">
-                  <form className="inline-form" action={winnerCanSelectAction}>
-                    <input type="hidden" name="id" value={winner.id} />
-                    <label className="meta-row">
-                      <input
-                        name="canSelect"
-                        type="checkbox"
-                        defaultChecked={winner.canSelect}
-                      />
-                      {copy.admin.canSelect}
-                    </label>
-                    <button className="button" type="submit">
-                      {copy.admin.saveSelectionPermission}
-                    </button>
-                  </form>
-                  <form action={deleteWinnerAction}>
-                    <input type="hidden" name="id" value={winner.id} />
-                    <button className="button danger" type="submit">
-                      {copy.admin.deleteWinner}
-                    </button>
-                  </form>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
+      <AdminWinnerManager initialWinners={store.winners} items={store.items} />
     </main>
   );
 }

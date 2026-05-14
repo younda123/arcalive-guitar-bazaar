@@ -119,7 +119,12 @@ export const copy = {
       statusSaved: "상태를 저장했습니다.",
       statusError: "상태를 저장하지 못했습니다.",
       imageSaved: "이미지를 교체했습니다.",
-      imageError: "이미지를 교체하지 못했습니다."
+      imageError: "이미지를 교체하지 못했습니다.",
+      winnerCreated: "당첨자를 등록했습니다.",
+      winnerUpdated: "당첨자를 수정했습니다.",
+      winnerPermissionSaved: "선택 권한을 저장했습니다.",
+      winnerDeleted: "당첨자를 삭제했습니다.",
+      winnerDeleteError: "당첨자를 삭제하지 못했습니다."
     },
     errors: {
       "image-empty": "교체할 이미지를 선택해 주세요.",
