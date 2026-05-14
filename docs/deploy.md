@@ -2,10 +2,19 @@
 
 ## Docker 실행
 
-이 앱은 미니 PC에서 Docker 컨테이너로 실행하는 것을 기준으로 합니다.
+이 앱은 미니 PC에서 Docker 컨테이너로 실행하는 것을 기준으로 합니다. 작업용 PC에서는 Docker 컨테이너를 올리지 않습니다.
+
+미니 PC는 운영 브랜치인 `prod`만 받습니다.
 
 ```powershell
-docker compose up -d --build
+git switch prod
+git pull --ff-only origin prod
+```
+
+그다음 컨테이너를 갱신합니다.
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d --build
 ```
 
 컨테이너 내부 앱 포트는 `3000`입니다. `docker-compose.yml`에서는 호스트의 다음 주소로만 열어둡니다.
