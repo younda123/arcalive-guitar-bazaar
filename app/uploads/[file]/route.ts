@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import { notFound } from "next/navigation";
 import path from "path";
-import { uploadContentType } from "@/lib/uploads";
+import { uploadContentType } from "@/lib/upload-content-type";
 
 export async function GET(
   _request: Request,

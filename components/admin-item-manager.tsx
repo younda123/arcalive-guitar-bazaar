@@ -23,8 +23,23 @@ const imageErrorMessages: Record<string, string> = {
 
 export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {
   const [items, setItems] = useState(initialItems);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ItemStatus | "all">("all");
   const [savingId, setSavingId] = useState<string>();
   const [message, setMessage] = useState<string>();
+
+  const filteredItems = items.filter((item) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const matchesQuery =
+      !normalizedQuery ||
+      [item.title, item.condition, item.description, item.donorContact]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+
+    return matchesQuery && matchesStatus;
+  });
 
   function replaceItem(updated: Item) {
     setItems((current) =>
@@ -108,8 +123,32 @@ export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {
   return (
     <div className="stack">
       {message ? <p className="notice">{message}</p> : null}
+      <div className="toolbar">
+        <label>
+          {copy.admin.searchItems}
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={copy.admin.searchItemsPlaceholder}
+          />
+        </label>
+        <label>
+          {copy.admin.filterStatus}
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value as ItemStatus | "all")}
+          >
+            <option value="all">{copy.items.all}</option>
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {statusLabels[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <div className="admin-list">
-        {items.map((item) => (
+        {filteredItems.length > 0 ? filteredItems.map((item) => (
           <article className="admin-panel" id={`item-${item.id}`} key={item.id}>
             <div className="admin-summary">
               <div>
@@ -234,7 +273,7 @@ export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {
               </div>
             </div>
           </article>
-        ))}
+        )) : <p className="empty">{copy.admin.noMatchingItems}</p>}
       </div>
     </div>
   );

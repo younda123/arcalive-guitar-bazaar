@@ -26,8 +26,19 @@ export function AdminWinnerManager({
   const [winners, setWinners] = useState(() =>
     initialWinners.map((winner) => withSelectedItemTitle(winner, items))
   );
+  const [query, setQuery] = useState("");
   const [savingId, setSavingId] = useState<string>();
   const [message, setMessage] = useState<string>();
+  const filteredWinners = winners.filter((winner) => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return (
+      !normalizedQuery ||
+      [winner.name, winner.code, winner.selectedItemTitle ?? ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery)
+    );
+  });
 
   async function createWinner(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -140,6 +151,11 @@ export function AdminWinnerManager({
   }
 
   async function deleteWinner(id: string) {
+    const target = winners.find((winner) => winner.id === id);
+    if (!window.confirm(copy.admin.confirmDeleteWinner(target?.name ?? ""))) {
+      return;
+    }
+
     setSavingId(id);
     setMessage(undefined);
 
@@ -188,8 +204,18 @@ export function AdminWinnerManager({
 
       <section className="section stack">
         <h2>{copy.admin.selectionResults}</h2>
+        <div className="toolbar">
+          <label>
+            {copy.admin.searchWinners}
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={copy.admin.searchWinnersPlaceholder}
+            />
+          </label>
+        </div>
         <div className="admin-list compact">
-          {winners.map((winner) => (
+          {filteredWinners.length > 0 ? filteredWinners.map((winner) => (
             <article className="admin-panel winner-panel" key={winner.id}>
               <div className="admin-summary">
                 <div>
@@ -265,7 +291,7 @@ export function AdminWinnerManager({
                 </button>
               </div>
             </article>
-          ))}
+          )) : <p className="empty">{copy.admin.noMatchingWinners}</p>}
         </div>
       </section>
     </div>

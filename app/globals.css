@@ -273,6 +273,43 @@ h3 {
   resize: vertical;
 }
 
+.field-help {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.upload-preview-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+}
+
+.upload-preview {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+}
+
+.upload-preview img,
+.upload-preview .image-placeholder {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  font-size: 12px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.upload-preview span {
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .detail {
   display: grid;
   gap: 24px;
@@ -326,6 +363,30 @@ h3 {
 
 .admin-list.compact {
   gap: 10px;
+}
+
+.toolbar {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px);
+}
+
+.toolbar label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 5px;
+}
+
+.toolbar input,
+.toolbar select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 38px;
+  padding: 8px 9px;
+  width: 100%;
 }
 
 .admin-panel {
@@ -446,6 +507,10 @@ h3 {
   .inline-form {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
   }
 }
 
