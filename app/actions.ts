@@ -1,9 +1,7 @@
 "use server";
 
-import { mkdir, writeFile } from "fs/promises";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import path from "path";
 import {
   createItem,
   createWinner,
@@ -16,60 +14,12 @@ import {
   updateWinnerCanSelect
 } from "@/lib/store";
 import type { DeliveryMethod, ItemStatus } from "@/lib/types";
+import { saveUploadedImages } from "@/lib/uploads";
 
 const adminCookie = "bazaar_admin";
-const maxImageCount = 10;
-const maxImageSize = 10 * 1024 * 1024;
-const allowedImageTypes = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-  ["image/gif", "gif"]
-]);
 
 function getString(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
-}
-
-async function saveUploadedImages(formData: FormData) {
-  const images = formData
-    .getAll("image")
-    .filter((image): image is File => image instanceof File && image.size > 0);
-
-  if (images.length === 0) {
-    return { imageUrls: [] };
-  }
-
-  if (images.length > maxImageCount) {
-    return { error: "count" };
-  }
-
-  const validImages: Array<{ file: File; extension: string }> = [];
-  for (const image of images) {
-    const extension = allowedImageTypes.get(image.type);
-    if (!extension) {
-      return { error: "type" };
-    }
-
-    if (image.size > maxImageSize) {
-      return { error: "size" };
-    }
-
-    validImages.push({ file: image, extension });
-  }
-
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-
-  const imageUrls: string[] = [];
-  for (const image of validImages) {
-    const fileName = `${crypto.randomUUID()}.${image.extension}`;
-    const bytes = Buffer.from(await image.file.arrayBuffer());
-    await writeFile(path.join(uploadDir, fileName), bytes);
-    imageUrls.push(`/uploads/${fileName}`);
-  }
-
-  return { imageUrls };
 }
 
 export async function createItemAction(formData: FormData) {

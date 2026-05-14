@@ -110,9 +110,17 @@ export const copy = {
     updateWinner: "당첨자 수정",
     saveSelectionPermission: "선택 권한 저장",
     deleteWinner: "당첨자 삭제",
+    saving: "저장 중",
     winnerCodeLine: (rank: number, code: string) => `${rank}위 · 코드 ${code}`,
     noSelectedItem: "선택 상품 없음",
     selectionWaiting: "선택 대기",
+    messages: {
+      itemSaved: "상품 정보를 저장했습니다.",
+      statusSaved: "상태를 저장했습니다.",
+      statusError: "상태를 저장하지 못했습니다.",
+      imageSaved: "이미지를 교체했습니다.",
+      imageError: "이미지를 교체하지 못했습니다."
+    },
     errors: {
       "image-empty": "교체할 이미지를 선택해 주세요.",
       "image-size": "이미지는 10MB 이하만 업로드할 수 있습니다.",

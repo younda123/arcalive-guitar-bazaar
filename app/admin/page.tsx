@@ -4,25 +4,13 @@ import {
   createWinnerAction,
   deleteWinnerAction,
   isAdmin,
-  itemStatusAction,
-  updateItemAction,
-  updateItemImageAction,
   updateWinnerAction,
   winnerCanSelectAction
 } from "@/app/actions";
+import { AdminItemManager } from "@/components/admin-item-manager";
 import { copy } from "@/lib/copy";
-import { deliveryLabels, statusLabels } from "@/lib/labels";
+import { statusLabels } from "@/lib/labels";
 import { readStore, sortItems } from "@/lib/store";
-import type { ItemStatus } from "@/lib/types";
-
-const statuses: ItemStatus[] = [
-  "pending",
-  "approved",
-  "selected",
-  "completed",
-  "hidden",
-  "deleted"
-];
 
 const adminErrors: Record<string, string> = copy.admin.errors;
 
@@ -77,120 +65,7 @@ export default async function AdminPage({
 
       <section className="section stack">
         <h2>{copy.admin.itemManagement}</h2>
-        <div className="admin-list">
-          {items.map((item) => (
-            <article className="admin-panel" key={item.id}>
-              <div className="admin-summary">
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.condition}</p>
-                </div>
-                <div className="meta-row">
-                  <span className="badge">{statusLabels[item.status]}</span>
-                  <span className="badge">{deliveryLabels[item.deliveryMethod]}</span>
-                </div>
-                <p className="admin-contact">{item.donorContact}</p>
-              </div>
-
-              <form className="admin-edit-form" action={updateItemAction}>
-                <input type="hidden" name="id" value={item.id} />
-                <label>
-                  {copy.fields.itemTitle}
-                  <input name="title" defaultValue={item.title} required />
-                </label>
-                <label>
-                  {copy.fields.itemCondition}
-                  <input name="condition" defaultValue={item.condition} required />
-                </label>
-                <label>
-                  {copy.fields.itemDescription}
-                  <textarea name="description" defaultValue={item.description} required />
-                </label>
-                <label>
-                  {copy.fields.deliveryMethod}
-                  <select name="deliveryMethod" defaultValue={item.deliveryMethod}>
-                    <option value="shipping">{deliveryLabels.shipping}</option>
-                    <option value="direct">{deliveryLabels.direct}</option>
-                    <option value="negotiable">{deliveryLabels.negotiable}</option>
-                  </select>
-                </label>
-                <label>
-                  {copy.fields.donorContact}
-                  <input name="donorContact" defaultValue={item.donorContact} required />
-                </label>
-                <button className="button" type="submit">
-                  {copy.admin.updateItem}
-                </button>
-              </form>
-
-              <div className="admin-tools">
-                <form className="admin-edit-form" action={updateItemImageAction}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <label>
-                    {copy.admin.replaceImage}
-                    <input name="image" type="file" accept="image/*" multiple required />
-                  </label>
-                  <button className="button" type="submit">
-                    {copy.admin.replaceImage}
-                  </button>
-                </form>
-
-                <form className="inline-form" action={itemStatusAction}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <select name="status" defaultValue={item.status}>
-                    {statuses.map((status) => (
-                      <option key={status} value={status}>
-                        {statusLabels[status]}
-                      </option>
-                    ))}
-                  </select>
-                  <button className="button" type="submit">
-                    {copy.admin.saveStatus}
-                  </button>
-                </form>
-
-                <div className="actions">
-                  {item.status === "pending" ? (
-                    <form action={itemStatusAction}>
-                      <input type="hidden" name="id" value={item.id} />
-                      <input type="hidden" name="status" value="approved" />
-                      <button className="button primary" type="submit">
-                        {copy.admin.approve}
-                      </button>
-                    </form>
-                  ) : null}
-                  {item.status === "selected" ? (
-                    <>
-                      <form action={itemStatusAction}>
-                        <input type="hidden" name="id" value={item.id} />
-                        <input type="hidden" name="status" value="completed" />
-                        <button className="button primary" type="submit">
-                          {copy.admin.completeDelivery}
-                        </button>
-                      </form>
-                      <form action={itemStatusAction}>
-                        <input type="hidden" name="id" value={item.id} />
-                        <input type="hidden" name="status" value="approved" />
-                        <button className="button" type="submit">
-                          {copy.admin.cancelSelection}
-                        </button>
-                      </form>
-                    </>
-                  ) : null}
-                  {item.status === "approved" ? (
-                    <form action={itemStatusAction}>
-                      <input type="hidden" name="id" value={item.id} />
-                      <input type="hidden" name="status" value="hidden" />
-                      <button className="button" type="submit">
-                        {copy.admin.hide}
-                      </button>
-                    </form>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+        <AdminItemManager initialItems={items} />
       </section>
 
       <section className="section stack">
