@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   createItem,
+  getEventSettings,
   selectItemForWinner,
 } from "@/lib/store";
 import type { DeliveryMethod } from "@/lib/types";
@@ -16,19 +17,29 @@ function getString(formData: FormData, key: string) {
 }
 
 export async function createItemAction(formData: FormData) {
+  const settings = await getEventSettings();
+  if (settings.phase !== "intake") {
+    redirect("/items/new?error=closed");
+  }
+
   const upload = await saveUploadedImages(formData);
   if (upload.error) {
     redirect(`/items/new?error=${upload.error}`);
   }
 
-  const item = await createItem({
-    title: getString(formData, "title"),
-    description: getString(formData, "description"),
-    condition: getString(formData, "condition"),
-    imageUrls: upload.imageUrls,
-    deliveryMethod: getString(formData, "deliveryMethod") as DeliveryMethod,
-    donorContact: getString(formData, "donorContact")
-  });
+  let item;
+  try {
+    item = await createItem({
+      title: getString(formData, "title"),
+      description: getString(formData, "description"),
+      condition: getString(formData, "condition"),
+      imageUrls: upload.imageUrls,
+      deliveryMethod: getString(formData, "deliveryMethod") as DeliveryMethod,
+      donorContact: getString(formData, "donorContact")
+    });
+  } catch {
+    redirect("/items/new?error=closed");
+  }
   redirect(`/items/${item.id}?submitted=1`);
 }
 

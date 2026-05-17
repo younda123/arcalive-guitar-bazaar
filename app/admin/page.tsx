@@ -3,6 +3,7 @@ import {
   adminLogoutAction,
   isAdmin
 } from "@/app/actions";
+import { AdminEventSettings } from "@/components/admin-event-settings";
 import { AdminItemManager } from "@/components/admin-item-manager";
 import { AdminWinnerManager } from "@/components/admin-winner-manager";
 import { copy } from "@/lib/copy";
@@ -58,6 +59,8 @@ export default async function AdminPage({
       {error && adminErrors[error] ? (
         <p className="notice">{adminErrors[error]}</p>
       ) : null}
+
+      <AdminEventSettings initialSettings={store.settings} />
 
       <section className="section stack">
         <h2>{copy.admin.itemManagement}</h2>

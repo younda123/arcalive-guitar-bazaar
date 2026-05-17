@@ -8,6 +8,15 @@ export type ItemStatus =
   | "hidden"
   | "deleted";
 
+export type EventPhase = "intake" | "event" | "selection";
+
+export type EventSettings = {
+  phase: EventPhase;
+  itemSubmissionDeadline?: string;
+  eventEndAt?: string;
+  updatedAt: string;
+};
+
 export type Item = {
   id: string;
   title: string;
@@ -37,4 +46,5 @@ export type Winner = {
 export type Store = {
   items: Item[];
   winners: Winner[];
+  settings: EventSettings;
 };

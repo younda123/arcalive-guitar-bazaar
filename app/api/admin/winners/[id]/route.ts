@@ -23,7 +23,7 @@ export async function PATCH(
       id,
       name: String(body.name ?? "").trim(),
       rank: Number(body.rank),
-      code: String(body.code ?? "").trim(),
+      code: body.code === undefined ? undefined : String(body.code ?? "").trim(),
       canSelect: Boolean(body.canSelect)
     });
     return NextResponse.json({ winner });

@@ -2,7 +2,7 @@ import { selectItemAction } from "@/app/actions";
 import { ItemCard } from "@/components/item-card";
 import { copy } from "@/lib/copy";
 import { deliveryLabels, statusClass, statusLabels } from "@/lib/labels";
-import { getItem, getWinnerByCode, listSelectableItems } from "@/lib/store";
+import { getItem, getWinnerSelectionState, listSelectableItems } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +15,13 @@ export default async function WinnerPage({
 }) {
   const { code } = await params;
   const { error, selected } = await searchParams;
-  const winner = await getWinnerByCode(decodeURIComponent(code));
+  const selectionState = await getWinnerSelectionState(decodeURIComponent(code));
+  const winner = selectionState?.winner;
   const selectableItems = await listSelectableItems();
   const selectedItem = winner?.selectedItemId
     ? await getItem(winner.selectedItemId)
     : undefined;
+  const canChooseNow = Boolean(selectionState?.canChooseNow);
 
   if (!winner) {
     return (
@@ -43,7 +45,7 @@ export default async function WinnerPage({
         <div className="meta-row">
           <span className="badge">{copy.common.rank(winner.rank)}</span>
           <span className="badge">
-            {winner.canSelect ? copy.winner.selectionOpen : copy.winner.selectionWaiting}
+            {canChooseNow ? copy.winner.selectionOpen : copy.winner.selectionWaiting}
           </span>
         </div>
       </section>
@@ -91,8 +93,12 @@ export default async function WinnerPage({
       ) : (
         <section className="section stack">
           <h2>{copy.winner.selectableItems}</h2>
-          {!winner.canSelect ? (
-            <p className="empty">{copy.winner.noPermission}</p>
+          {!canChooseNow ? (
+            <p className="empty">
+              {selectionState?.blockingWinner
+                ? copy.winner.waitingForRank(selectionState.blockingWinner.rank)
+                : copy.winner.noPermission}
+            </p>
           ) : selectableItems.length > 0 ? (
             <div className="grid">
               {selectableItems.map((item) => (

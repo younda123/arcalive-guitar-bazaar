@@ -1,7 +1,15 @@
 import { mkdirSync } from "fs";
 import path from "path";
 import { DatabaseSync } from "node:sqlite";
-import type { DeliveryMethod, Item, ItemStatus, Store, Winner } from "./types";
+import type {
+  DeliveryMethod,
+  EventPhase,
+  EventSettings,
+  Item,
+  ItemStatus,
+  Store,
+  Winner
+} from "./types";
 
 type DbItem = {
   id: string;
@@ -26,6 +34,14 @@ type DbWinner = {
   canSelect: number;
   selectedItemId: string | null;
   createdAt: string;
+  updatedAt: string;
+};
+
+type DbEventSettings = {
+  id: string;
+  phase: string;
+  itemSubmissionDeadline: string | null;
+  eventEndAt: string | null;
   updatedAt: string;
 };
 
@@ -77,6 +93,14 @@ function getDb() {
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS event_settings (
+        id TEXT PRIMARY KEY,
+        phase TEXT NOT NULL,
+        itemSubmissionDeadline TEXT,
+        eventEndAt TEXT,
+        updatedAt TEXT NOT NULL
+      );
     `);
     if (!columnExists(db, "items", "imageUrls")) {
       db.exec("ALTER TABLE items ADD COLUMN imageUrls TEXT");
@@ -93,6 +117,9 @@ function seedData(database: DatabaseSync) {
     count: number;
   };
   const winnerCount = database.prepare("SELECT COUNT(*) as count FROM winners").get() as {
+    count: number;
+  };
+  const settingsCount = database.prepare("SELECT COUNT(*) as count FROM event_settings").get() as {
     count: number;
   };
 
@@ -150,10 +177,24 @@ function seedData(database: DatabaseSync) {
       "2026-05-01T10:00:00.000Z"
     );
   }
+
+  if (settingsCount.count === 0) {
+    database.prepare(`
+      INSERT INTO event_settings (
+        id, phase, itemSubmissionDeadline, eventEndAt, updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?)
+    `).run("default", "intake", null, null, now());
+  }
 }
 
 function makeId(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
+}
+
+function makeWinnerCode(rank: number) {
+  const token = crypto.randomUUID().replaceAll("-", "").slice(0, 8).toUpperCase();
+  return `R${rank}-${token}`;
 }
 
 function parseImageUrls(item: Pick<DbItem, "imageUrl" | "imageUrls">) {
@@ -191,6 +232,15 @@ function toWinner(winner: DbWinner): Winner {
   };
 }
 
+function toEventSettings(settings: DbEventSettings): EventSettings {
+  return {
+    phase: settings.phase as EventPhase,
+    itemSubmissionDeadline: settings.itemSubmissionDeadline ?? undefined,
+    eventEndAt: settings.eventEndAt ?? undefined,
+    updatedAt: settings.updatedAt
+  };
+}
+
 function allItems() {
   return getDb().prepare("SELECT * FROM items").all() as DbItem[];
 }
@@ -220,8 +270,55 @@ export async function readStore(): Promise<Store> {
 
   return {
     items: allItems().map(toItem),
-    winners: winners.map(toWinner)
+    winners: winners.map(toWinner),
+    settings: await getEventSettings()
   };
+}
+
+export async function getEventSettings() {
+  const settings = getDb()
+    .prepare("SELECT * FROM event_settings WHERE id = 'default'")
+    .get() as DbEventSettings | undefined;
+
+  if (settings) return toEventSettings(settings);
+
+  const timestamp = now();
+  getDb()
+    .prepare(
+      "INSERT INTO event_settings (id, phase, itemSubmissionDeadline, eventEndAt, updatedAt) VALUES (?, ?, ?, ?, ?)"
+    )
+    .run("default", "intake", null, null, timestamp);
+
+  return {
+    phase: "intake",
+    updatedAt: timestamp
+  } satisfies EventSettings;
+}
+
+export async function updateEventSettings(input: {
+  phase: EventPhase;
+  itemSubmissionDeadline?: string;
+  eventEndAt?: string;
+}) {
+  getDb()
+    .prepare(
+      `
+        UPDATE event_settings
+        SET phase = ?,
+            itemSubmissionDeadline = ?,
+            eventEndAt = ?,
+            updatedAt = ?
+        WHERE id = 'default'
+      `
+    )
+    .run(
+      input.phase,
+      input.itemSubmissionDeadline?.trim() || null,
+      input.eventEndAt?.trim() || null,
+      now()
+    );
+
+  return getEventSettings();
 }
 
 export async function listPublicItems() {
@@ -259,6 +356,11 @@ export async function createItem(input: {
   deliveryMethod: DeliveryMethod;
   donorContact: string;
 }) {
+  const settings = await getEventSettings();
+  if (settings.phase !== "intake") {
+    throw new Error("상품 접수 기간이 아닙니다.");
+  }
+
   const timestamp = now();
   const imageUrls = input.imageUrls ?? (input.imageUrl ? [input.imageUrl] : []);
   const item: DbItem = {
@@ -371,18 +473,58 @@ export async function getWinnerByCode(code: string) {
   return winner ? toWinner(winner) : undefined;
 }
 
+function getBlockingWinner(database: DatabaseSync, winner: DbWinner) {
+  return database
+    .prepare(
+      `
+        SELECT *
+        FROM winners
+        WHERE rank < ?
+          AND selectedItemId IS NULL
+        ORDER BY rank ASC, createdAt ASC
+        LIMIT 1
+      `
+    )
+    .get(winner.rank) as DbWinner | undefined;
+}
+
+export async function getWinnerSelectionState(code: string) {
+  const database = getDb();
+  const winner = database
+    .prepare("SELECT * FROM winners WHERE lower(code) = lower(?)")
+    .get(code) as DbWinner | undefined;
+
+  if (!winner) return undefined;
+
+  const blockingWinner = getBlockingWinner(database, winner);
+
+  return {
+    winner: toWinner(winner),
+    blockingWinner: blockingWinner ? toWinner(blockingWinner) : undefined,
+    canChooseNow: Boolean(winner.canSelect) && !blockingWinner
+  };
+}
+
 export async function createWinner(input: {
   name: string;
   rank: number;
-  code: string;
   canSelect: boolean;
 }) {
   const timestamp = now();
+  let code = makeWinnerCode(input.rank);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const exists = getDb()
+      .prepare("SELECT id FROM winners WHERE code = ?")
+      .get(code);
+    if (!exists) break;
+    code = makeWinnerCode(input.rank);
+  }
+
   const winner: DbWinner = {
     id: makeId("winner"),
     name: input.name,
     rank: input.rank,
-    code: input.code.trim(),
+    code,
     canSelect: input.canSelect ? 1 : 0,
     selectedItemId: null,
     createdAt: timestamp,
@@ -426,9 +568,14 @@ export async function updateWinner(input: {
   id: string;
   name: string;
   rank: number;
-  code: string;
+  code?: string;
   canSelect: boolean;
 }) {
+  const currentWinner = getDb().prepare("SELECT * FROM winners WHERE id = ?").get(input.id) as
+    | DbWinner
+    | undefined;
+  if (!currentWinner) return undefined;
+
   getDb().prepare(`
     UPDATE winners
     SET name = ?,
@@ -440,7 +587,7 @@ export async function updateWinner(input: {
   `).run(
     input.name,
     input.rank,
-    input.code.trim(),
+    input.code?.trim() || currentWinner.code,
     input.canSelect ? 1 : 0,
     now(),
     input.id
@@ -481,6 +628,9 @@ export async function selectItemForWinner(code: string, itemId: string) {
 
     if (!winner) throw new Error("유효하지 않은 당첨자 코드입니다.");
     if (!winner.canSelect) throw new Error("현재 선택 권한이 없습니다.");
+    if (getBlockingWinner(database, winner)) {
+      throw new Error("앞 순위 당첨자가 아직 상품을 선택하지 않았습니다.");
+    }
     if (winner.selectedItemId) throw new Error("이미 상품을 선택했습니다.");
     if (!item || item.status !== "approved") {
       throw new Error("선택할 수 없는 상품입니다.");

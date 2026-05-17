@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { copy } from "@/lib/copy";
+import { getEventSettings } from "@/lib/store";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,11 +9,15 @@ export const metadata: Metadata = {
   description: copy.app.description
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getEventSettings();
+
   return (
     <html lang="ko">
       <body>
@@ -23,8 +28,12 @@ export default function RootLayout({
             </Link>
             <nav className="nav" aria-label={copy.app.navLabel}>
               <Link href="/items">{copy.app.nav.items}</Link>
-              <Link href="/items/new">{copy.app.nav.newItem}</Link>
-              <Link href="/winner">{copy.app.nav.winner}</Link>
+              {settings.phase === "intake" ? (
+                <Link href="/items/new">{copy.app.nav.newItem}</Link>
+              ) : null}
+              {settings.phase === "selection" ? (
+                <Link href="/winner">{copy.app.nav.winner}</Link>
+              ) : null}
             </nav>
           </header>
           {children}

@@ -16,6 +16,22 @@ function withSelectedItemTitle(winner: Winner, items: Item[]): WinnerWithItem {
   };
 }
 
+function sortWinners(winners: WinnerWithItem[]) {
+  return [...winners].sort(
+    (a, b) => a.rank - b.rank || a.createdAt.localeCompare(b.createdAt)
+  );
+}
+
+function getSelectionLabel(winner: WinnerWithItem, winners: WinnerWithItem[]) {
+  if (!winner.canSelect) return copy.admin.selectionWaiting;
+
+  const blockedByRank = winners.some(
+    (candidate) => candidate.rank < winner.rank && !candidate.selectedItemId
+  );
+
+  return blockedByRank ? copy.admin.rankWaiting : copy.admin.canSelect;
+}
+
 export function AdminWinnerManager({
   initialWinners,
   items
@@ -24,7 +40,7 @@ export function AdminWinnerManager({
   items: Item[];
 }) {
   const [winners, setWinners] = useState(() =>
-    initialWinners.map((winner) => withSelectedItemTitle(winner, items))
+    sortWinners(initialWinners.map((winner) => withSelectedItemTitle(winner, items)))
   );
   const [query, setQuery] = useState("");
   const [savingId, setSavingId] = useState<string>();
@@ -53,7 +69,6 @@ export function AdminWinnerManager({
       body: JSON.stringify({
         name: formData.get("name"),
         rank: formData.get("rank"),
-        code: formData.get("code"),
         canSelect: formData.get("canSelect") === "on"
       })
     });
@@ -66,9 +81,7 @@ export function AdminWinnerManager({
     }
 
     setWinners((current) =>
-      [...current, withSelectedItemTitle(result.winner, items)].sort(
-        (a, b) => a.rank - b.rank || a.createdAt.localeCompare(b.createdAt)
-      )
+      sortWinners([...current, withSelectedItemTitle(result.winner, items)])
     );
     form.reset();
     setMessage(copy.admin.messages.winnerCreated);
@@ -86,7 +99,6 @@ export function AdminWinnerManager({
       body: JSON.stringify({
         name: formData.get("name"),
         rank: formData.get("rank"),
-        code: formData.get("code"),
         canSelect: formData.get("canSelect") === "on"
       })
     });
@@ -99,8 +111,10 @@ export function AdminWinnerManager({
     }
 
     setWinners((current) =>
-      current.map((winner) =>
-        winner.id === id ? withSelectedItemTitle(result.winner, items) : winner
+      sortWinners(
+        current.map((winner) =>
+          winner.id === id ? withSelectedItemTitle(result.winner, items) : winner
+        )
       )
     );
     setMessage(copy.admin.messages.winnerUpdated);
@@ -130,7 +144,6 @@ export function AdminWinnerManager({
       body: JSON.stringify({
         name: override.name ?? winner.name,
         rank: override.rank ?? winner.rank,
-        code: override.code ?? winner.code,
         canSelect: override.canSelect ?? winner.canSelect
       })
     });
@@ -143,8 +156,10 @@ export function AdminWinnerManager({
     }
 
     setWinners((current) =>
-      current.map((candidate) =>
-        candidate.id === winner.id ? withSelectedItemTitle(result.winner, items) : candidate
+      sortWinners(
+        current.map((candidate) =>
+          candidate.id === winner.id ? withSelectedItemTitle(result.winner, items) : candidate
+        )
       )
     );
     return true;
@@ -189,8 +204,7 @@ export function AdminWinnerManager({
             <input id="rank" name="rank" type="number" min="1" required />
           </div>
           <div className="field">
-            <label htmlFor="code">{copy.fields.winnerCode}</label>
-            <input id="code" name="code" required />
+            <span className="field-help">{copy.admin.autoWinnerCode}</span>
           </div>
           <label className="meta-row">
             <input name="canSelect" type="checkbox" defaultChecked />
@@ -224,7 +238,7 @@ export function AdminWinnerManager({
                 </div>
                 <div className="meta-row">
                   <span className="badge">
-                    {winner.canSelect ? copy.admin.canSelect : copy.admin.selectionWaiting}
+                    {getSelectionLabel(winner, winners)}
                   </span>
                   <span className="badge">
                     {winner.selectedItemTitle ?? copy.admin.noSelectedItem}
@@ -247,10 +261,7 @@ export function AdminWinnerManager({
                     required
                   />
                 </label>
-                <label>
-                  {copy.fields.winnerCode}
-                  <input name="code" defaultValue={winner.code} required />
-                </label>
+                <p className="admin-contact">{copy.admin.winnerCodeOnly(winner.code)}</p>
                 <label className="meta-row">
                   <input
                     name="canSelect"
