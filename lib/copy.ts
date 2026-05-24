@@ -29,6 +29,7 @@ export const copy = {
     eventRemaining: (days: number, hours: number) =>
       `이벤트 종료까지 ${days}일 ${hours}시간`,
     eventEnded: "이벤트가 종료되었습니다",
+    eventEndedDetail: "상품 선택 단계로 전환을 기다리고 있습니다",
     eventNoEnd: "이벤트가 진행 중입니다",
     selectionTitle: (rank: number) => `${rank}등 상품 선택 차례입니다`,
     selectionDetail: "당첨자는 코드를 입력해 상품을 선택해 주세요",

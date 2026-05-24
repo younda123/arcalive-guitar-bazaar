@@ -26,6 +26,12 @@ function formatRemaining(value?: string) {
   return copy.eventStatus.eventRemaining(days, hours);
 }
 
+function isPast(value?: string) {
+  if (!value) return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now();
+}
+
 export function getCurrentSelectionWinner(winners: Winner[]) {
   return [...winners]
     .sort((a, b) => a.rank - b.rank || a.createdAt.localeCompare(b.createdAt))
@@ -44,9 +50,12 @@ export function getEventStatus(settings: EventSettings, winners: Winner[] = []) 
   }
 
   if (settings.phase === "event") {
+    const eventEnded = isPast(settings.eventEndAt);
     return {
-      title: copy.eventStatus.eventTitle,
-      detail: formatRemaining(settings.eventEndAt) ?? copy.eventStatus.eventNoEnd
+      title: eventEnded ? copy.eventStatus.eventEnded : copy.eventStatus.eventTitle,
+      detail: eventEnded
+        ? copy.eventStatus.eventEndedDetail
+        : formatRemaining(settings.eventEndAt) ?? copy.eventStatus.eventNoEnd
     };
   }
 
