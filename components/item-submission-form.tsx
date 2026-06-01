@@ -13,6 +13,7 @@ type Preview = {
 
 const maxImageCount = 10;
 const maxImageSize = 10 * 1024 * 1024;
+const maxTotalImageSize = 80 * 1024 * 1024;
 const allowedExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "heif"]);
 
 function getFileExtension(file: File) {
@@ -21,6 +22,9 @@ function getFileExtension(file: File) {
 
 function validateFiles(files: File[]) {
   if (files.length > maxImageCount) return copy.itemForm.errors.count;
+
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  if (totalSize > maxTotalImageSize) return copy.itemForm.errors["total-size"];
 
   const oversized = files.find((file) => file.size > maxImageSize);
   if (oversized) return `${oversized.name}: ${copy.itemForm.errors.size}`;

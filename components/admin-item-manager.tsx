@@ -18,7 +18,9 @@ const imageErrorMessages: Record<string, string> = {
   empty: copy.admin.errors["image-empty"],
   size: copy.admin.errors["image-size"],
   count: copy.admin.errors["image-count"],
-  type: copy.admin.errors["image-type"]
+  "total-size": copy.admin.errors["image-total-size"],
+  type: copy.admin.errors["image-type"],
+  upload: copy.admin.errors["image-upload"]
 };
 
 export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {

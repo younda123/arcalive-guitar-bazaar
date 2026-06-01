@@ -91,7 +91,9 @@ export const copy = {
       closed: "현재는 상품을 등록할 수 없습니다.",
       type: "JPG, PNG, WebP, GIF, HEIC 이미지만 업로드할 수 있습니다.",
       size: "이미지는 10MB 이하만 업로드할 수 있습니다.",
-      count: "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다."
+      count: "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다.",
+      "total-size": "이미지는 한 번에 총 80MB 이하로 업로드해 주세요.",
+      upload: "이미지를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
     }
   },
   winnerEntry: {
@@ -178,7 +180,9 @@ export const copy = {
       "image-empty": "교체할 이미지를 선택해 주세요.",
       "image-size": "이미지는 10MB 이하만 업로드할 수 있습니다.",
       "image-count": "상품 하나당 이미지는 최대 10개까지 업로드할 수 있습니다.",
+      "image-total-size": "이미지는 한 번에 총 80MB 이하로 업로드해 주세요.",
       "image-type": "JPG, PNG, WebP, GIF, HEIC 이미지만 업로드할 수 있습니다.",
+      "image-upload": "이미지를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
       "item-update": "상품 정보를 수정하지 못했습니다.",
       "winner-code": "이미 사용 중인 당첨자 코드입니다."
     }

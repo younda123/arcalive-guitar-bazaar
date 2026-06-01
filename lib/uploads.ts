@@ -4,6 +4,7 @@ import convertHeic from "heic-convert";
 
 const maxImageCount = 10;
 const maxImageSize = 10 * 1024 * 1024;
+const maxTotalImageSize = 80 * 1024 * 1024;
 const allowedImageTypes = new Map([
   ["image/jpeg", "jpg"],
   ["image/pjpeg", "jpg"],
@@ -51,6 +52,11 @@ export async function saveUploadedImages(formData: FormData) {
     return { error: "count" };
   }
 
+  const totalSize = images.reduce((sum, image) => sum + image.size, 0);
+  if (totalSize > maxTotalImageSize) {
+    return { error: "total-size" };
+  }
+
   const validImages: Array<{ file: File; extension: string }> = [];
   for (const image of images) {
     const extension = getExtension(image);
@@ -66,7 +72,11 @@ export async function saveUploadedImages(formData: FormData) {
   }
 
   const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
+  try {
+    await mkdir(uploadDir, { recursive: true });
+  } catch {
+    return { error: "upload" };
+  }
 
   const imageUrls: string[] = [];
   for (const image of validImages) {
@@ -95,7 +105,11 @@ export async function saveUploadedImages(formData: FormData) {
     }
 
     const fileName = `${crypto.randomUUID()}.${converted.extension}`;
-    await writeFile(path.join(uploadDir, fileName), converted.bytes);
+    try {
+      await writeFile(path.join(uploadDir, fileName), converted.bytes);
+    } catch {
+      return { error: "upload" };
+    }
     imageUrls.push(`/uploads/${fileName}`);
   }
 
