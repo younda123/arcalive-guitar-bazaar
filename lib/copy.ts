@@ -10,7 +10,7 @@ export const copy = {
     }
   },
   common: {
-    noImage: "NO IMAGE",
+    noImage: "이미지 없음",
     imageListLabel: "상품 이미지 목록",
     imageAlt: (title: string, index = 1) =>
       index === 1 ? `${title} 이미지` : `${title} 이미지 ${index}`,
@@ -28,11 +28,11 @@ export const copy = {
     eventTitle: "이벤트 진행중입니다",
     eventRemaining: (days: number, hours: number) =>
       `이벤트 종료까지 ${days}일 ${hours}시간`,
-    eventEnded: "이벤트가 종료되었습니다",
+    eventEnded: "상품을 선택해주세요",
     eventNoEnd: "이벤트가 진행 중입니다",
     selectionTitle: (rank: number) => `${rank}등 상품 선택 차례입니다`,
     selectionDetail: "당첨자는 코드를 입력해 상품을 선택해 주세요",
-    selectionDoneTitle: "이벤트가 종료되었습니다",
+    selectionDoneTitle: "상품을 선택해주세요",
     selectionDoneDetail: "모든 선택 차례가 완료되었습니다"
   },
   fields: {
@@ -51,7 +51,7 @@ export const copy = {
     eventEndAt: "이벤트 종료일"
   },
   home: {
-    eyebrow: "Arcalive Guitar Bazaar",
+    eyebrow: "제2회 아카라이브 기타채널 바자회",
     title: "2026 기타 채널 바자회",
     lead:
       "상품 등록 후 운영자가 승인한 물품만 공개 상품 목록에 표시됩니다. 당첨자 선정은 무작위 추첨으로 이루어지며, 당첨자는 운영자가 발급한 코드를 입력하여 상품을 선택할 수 있습니다.",
