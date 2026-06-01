@@ -19,8 +19,11 @@ export default async function Home() {
     <main className="page">
       <section className="hero">
         <p className="eyebrow">{copy.home.eyebrow}</p>
-        <h1>{status.title}</h1>
-        <p className="lead">{status.detail}</p>
+        <h1>{copy.home.title}</h1>
+        <div className="phase-summary">
+          <p className="phase-title">{status.title}</p>
+          <p className="phase-detail">{status.detail}</p>
+        </div>
         <p className="lead">{copy.home.lead}</p>
         <div className="actions">
           {store.settings.phase === "intake" ? (
