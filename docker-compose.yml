@@ -15,3 +15,11 @@ services:
     volumes:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads
+    networks:
+      - default
+      - livlog_tunnel
+
+networks:
+  livlog_tunnel:
+    external: true
+    name: livlog_default

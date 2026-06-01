@@ -10,9 +10,9 @@
 
 ## 브랜치
 
-- `prod`: 운영 브랜치입니다. 미니 PC는 이 브랜치만 받습니다.
+- `master`: 현재 운영 브랜치입니다. 미니 PC는 이 브랜치를 받습니다.
 - `dev`: 개발 및 베타 개선 작업 브랜치입니다. 이 PC의 기본 작업 브랜치입니다.
-- `master`: 기존 브랜치입니다. 새 운영 배포 기준으로는 사용하지 않습니다.
+- `prod`: 운영 브랜치 후보였으나 현재 미니 PC 운영에는 사용하지 않습니다.
 
 작업 흐름은 아래처럼 둡니다.
 
@@ -20,8 +20,8 @@
 dev에서 작업
 -> 빌드 확인
 -> dev에 커밋/푸시
--> 테스트 후 prod로 병합
--> 미니 PC에서 prod만 pull
+-> 테스트 후 master로 병합
+-> 미니 PC에서 master pull
 ```
 
 ## 작업용 PC 규칙
@@ -46,10 +46,10 @@ dev에서 작업
 운영 배포는 미니 PC에서만 진행합니다.
 
 ```powershell
-git switch prod
-git pull --ff-only origin prod
+git switch master
+git pull --ff-only origin master
 .\scripts\backup.ps1
-docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d --build
+docker compose up -d --build
 ```
 
 배포 전에는 반드시 백업을 먼저 생성합니다.
