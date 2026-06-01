@@ -436,6 +436,35 @@ h3 {
   gap: 10px;
 }
 
+.admin-item-media {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.admin-item-media img,
+.admin-item-media .image-placeholder {
+  aspect-ratio: 4 / 3;
+  display: block;
+  font-size: 13px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.image-count {
+  background: rgba(34, 34, 34, 0.74);
+  border-radius: 999px;
+  bottom: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 8px;
+  position: absolute;
+  right: 8px;
+}
+
 .admin-summary p,
 .admin-contact {
   color: var(--muted);

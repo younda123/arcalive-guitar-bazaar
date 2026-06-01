@@ -154,6 +154,18 @@ export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {
         {filteredItems.length > 0 ? filteredItems.map((item) => (
           <article className="admin-panel" id={`item-${item.id}`} key={item.id}>
             <div className="admin-summary">
+              <div className="admin-item-media">
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={copy.common.imageAlt(item.title)} />
+                ) : (
+                  <div className="image-placeholder">{copy.common.noImage}</div>
+                )}
+                {item.imageUrls.length > 1 ? (
+                  <span className="image-count">
+                    {copy.common.imageCount(item.imageUrls.length)}
+                  </span>
+                ) : null}
+              </div>
               <div>
                 <h3>{item.title}</h3>
                 <p>{item.condition}</p>

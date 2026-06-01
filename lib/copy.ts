@@ -14,6 +14,7 @@ export const copy = {
     imageListLabel: "상품 이미지 목록",
     imageAlt: (title: string, index = 1) =>
       index === 1 ? `${title} 이미지` : `${title} 이미지 ${index}`,
+    imageCount: (count: number) => `이미지 ${count}장`,
     rank: (rank: number) => `${rank}위`
   },
   eventPhases: {
