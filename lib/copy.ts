@@ -98,7 +98,7 @@ export const copy = {
     eyebrow: "Winner",
     title: "당첨자 코드 입력",
     lead: "운영자가 발급한 코드를 입력하면 상품 선택 페이지로 이동합니다.",
-    codePlaceholder: "예: DEMO-1",
+    codePlaceholder: "예: R1-A1B2C3D4",
     submit: "확인"
   },
   winner: {

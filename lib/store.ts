@@ -117,9 +117,6 @@ function seedData(database: DatabaseSync) {
   const itemCount = database.prepare("SELECT COUNT(*) as count FROM items").get() as {
     count: number;
   };
-  const winnerCount = database.prepare("SELECT COUNT(*) as count FROM winners").get() as {
-    count: number;
-  };
   const settingsCount = database.prepare("SELECT COUNT(*) as count FROM event_settings").get() as {
     count: number;
   };
@@ -158,24 +155,6 @@ function seedData(database: DatabaseSync) {
       null,
       "2026-05-02T09:00:00.000Z",
       "2026-05-02T09:00:00.000Z"
-    );
-  }
-
-  if (winnerCount.count === 0) {
-    database.prepare(`
-      INSERT INTO winners (
-        id, name, rank, code, canSelect, selectedItemId, createdAt, updatedAt
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      "winner-demo-1",
-      "1등 당첨자",
-      1,
-      "DEMO-1",
-      1,
-      null,
-      "2026-05-01T10:00:00.000Z",
-      "2026-05-01T10:00:00.000Z"
     );
   }
 
