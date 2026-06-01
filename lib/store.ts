@@ -1,6 +1,7 @@
 import { mkdirSync } from "fs";
 import path from "path";
 import { DatabaseSync } from "node:sqlite";
+import { getEffectiveEventSettings } from "./event-status";
 import type {
   DeliveryMethod,
   EventPhase,
@@ -280,7 +281,7 @@ export async function getEventSettings() {
     .prepare("SELECT * FROM event_settings WHERE id = 'default'")
     .get() as DbEventSettings | undefined;
 
-  if (settings) return toEventSettings(settings);
+  if (settings) return getEffectiveEventSettings(toEventSettings(settings));
 
   const timestamp = now();
   getDb()
@@ -497,11 +498,13 @@ export async function getWinnerSelectionState(code: string) {
   if (!winner) return undefined;
 
   const blockingWinner = getBlockingWinner(database, winner);
+  const settings = await getEventSettings();
 
   return {
     winner: toWinner(winner),
     blockingWinner: blockingWinner ? toWinner(blockingWinner) : undefined,
-    canChooseNow: Boolean(winner.canSelect) && !blockingWinner
+    canChooseNow:
+      settings.phase === "selection" && Boolean(winner.canSelect) && !blockingWinner
   };
 }
 
@@ -627,6 +630,10 @@ export async function selectItemForWinner(code: string, itemId: string) {
       | undefined;
 
     if (!winner) throw new Error("유효하지 않은 당첨자 코드입니다.");
+    const settings = await getEventSettings();
+    if (settings.phase !== "selection") {
+      throw new Error("아직 상품 선택 기간이 아닙니다.");
+    }
     if (!winner.canSelect) throw new Error("현재 선택 권한이 없습니다.");
     if (getBlockingWinner(database, winner)) {
       throw new Error("앞 순위 당첨자가 아직 상품을 선택하지 않았습니다.");

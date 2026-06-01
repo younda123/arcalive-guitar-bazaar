@@ -1,10 +1,15 @@
 import { copy } from "@/lib/copy";
 import type { EventSettings, Winner } from "@/lib/types";
 
-function formatDate(value?: string) {
+function toDate(value?: string) {
   if (!value) return undefined;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return undefined;
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function formatDate(value?: string) {
+  const date = toDate(value);
+  if (!date) return undefined;
 
   return new Intl.DateTimeFormat("ko-KR", {
     month: "long",
@@ -13,10 +18,9 @@ function formatDate(value?: string) {
 }
 
 function formatRemaining(value?: string) {
-  if (!value) return undefined;
-  const date = new Date(value);
+  const date = toDate(value);
+  if (!date) return undefined;
   const remainingMs = date.getTime() - Date.now();
-  if (Number.isNaN(remainingMs)) return undefined;
   if (remainingMs <= 0) return copy.eventStatus.eventEnded;
 
   const totalHours = Math.floor(remainingMs / (1000 * 60 * 60));
@@ -26,10 +30,30 @@ function formatRemaining(value?: string) {
   return copy.eventStatus.eventRemaining(days, hours);
 }
 
-function isPast(value?: string) {
-  if (!value) return false;
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now();
+function isPast(value?: string, now = new Date()) {
+  const date = toDate(value);
+  return Boolean(date && date.getTime() <= now.getTime());
+}
+
+export function getEffectiveEventSettings(
+  settings: EventSettings,
+  now = new Date()
+): EventSettings {
+  if (
+    settings.phase === "intake" &&
+    isPast(settings.itemSubmissionDeadline, now)
+  ) {
+    if (isPast(settings.eventEndAt, now)) {
+      return { ...settings, phase: "selection" };
+    }
+    return { ...settings, phase: "event" };
+  }
+
+  if (settings.phase === "event" && isPast(settings.eventEndAt, now)) {
+    return { ...settings, phase: "selection" };
+  }
+
+  return settings;
 }
 
 export function getCurrentSelectionWinner(winners: Winner[]) {
@@ -39,8 +63,10 @@ export function getCurrentSelectionWinner(winners: Winner[]) {
 }
 
 export function getEventStatus(settings: EventSettings, winners: Winner[] = []) {
-  if (settings.phase === "intake") {
-    const deadline = formatDate(settings.itemSubmissionDeadline);
+  const effectiveSettings = getEffectiveEventSettings(settings);
+
+  if (effectiveSettings.phase === "intake") {
+    const deadline = formatDate(effectiveSettings.itemSubmissionDeadline);
     return {
       title: copy.eventStatus.intakeTitle,
       detail: deadline
@@ -49,13 +75,10 @@ export function getEventStatus(settings: EventSettings, winners: Winner[] = []) 
     };
   }
 
-  if (settings.phase === "event") {
-    const eventEnded = isPast(settings.eventEndAt);
+  if (effectiveSettings.phase === "event") {
     return {
-      title: eventEnded ? copy.eventStatus.eventEnded : copy.eventStatus.eventTitle,
-      detail: eventEnded
-        ? copy.eventStatus.eventEndedDetail
-        : formatRemaining(settings.eventEndAt) ?? copy.eventStatus.eventNoEnd
+      title: copy.eventStatus.eventTitle,
+      detail: formatRemaining(effectiveSettings.eventEndAt) ?? copy.eventStatus.eventNoEnd
     };
   }
 
