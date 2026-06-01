@@ -30,13 +30,16 @@ export function AdminItemManager({ initialItems }: { initialItems: Item[] }) {
 
   const filteredItems = items.filter((item) => {
     const normalizedQuery = query.trim().toLowerCase();
+    const matchesStatus =
+      statusFilter === "all"
+        ? item.status !== "deleted"
+        : item.status === statusFilter;
     const matchesQuery =
       !normalizedQuery ||
       [item.title, item.condition, item.description, item.donorContact]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery);
-    const matchesStatus = statusFilter === "all" || item.status === statusFilter;
 
     return matchesQuery && matchesStatus;
   });
