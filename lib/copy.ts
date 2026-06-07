@@ -87,6 +87,7 @@ export const copy = {
     imageHelp: "이미지는 최대 10개, 파일당 25MB까지 업로드할 수 있습니다. iPhone HEIC 사진은 자동으로 변환됩니다.",
     selectedImages: (count: number) => `${count}개의 이미지를 선택했습니다.`,
     heicPreviewNote: "HEIC 변환 예정",
+    previewUnavailableNote: "미리보기 불가",
     errors: {
       closed: "현재는 상품을 등록할 수 없습니다.",
       type: "JPG, PNG, WebP, GIF, HEIC 이미지만 업로드할 수 있습니다.",

@@ -41,21 +41,64 @@ function toBuffer(value: Buffer | Uint8Array | ArrayBuffer) {
   return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
 }
 
-export async function saveUploadedImages(formData: FormData) {
+type UploadLogContext = {
+  scope?: string;
+};
+
+function logUpload(
+  level: "info" | "error",
+  context: UploadLogContext | undefined,
+  message: string,
+  details?: Record<string, unknown>
+) {
+  if (!context?.scope) return;
+
+  const payload = JSON.stringify({
+    scope: context.scope,
+    upload: message,
+    ...details
+  });
+  if (level === "error") {
+    console.error(payload);
+  } else {
+    console.info(payload);
+  }
+}
+
+function fileMeta(file: File, extension?: string) {
+  return {
+    name: file.name,
+    type: file.type || "(empty)",
+    size: file.size,
+    extension
+  };
+}
+
+export async function saveUploadedImages(
+  formData: FormData,
+  context?: UploadLogContext
+) {
   const images = formData
     .getAll("image")
     .filter((image): image is File => image instanceof File && image.size > 0);
+
+  logUpload("info", context, "received", {
+    count: images.length,
+    files: images.map((image) => fileMeta(image))
+  });
 
   if (images.length === 0) {
     return { imageUrls: [] };
   }
 
   if (images.length > maxImageCount) {
+    logUpload("error", context, "count-exceeded", { count: images.length });
     return { error: "count" };
   }
 
   const totalSize = images.reduce((sum, image) => sum + image.size, 0);
   if (totalSize > maxTotalImageSize) {
+    logUpload("error", context, "total-size-exceeded", { totalSize });
     return { error: "total-size" };
   }
 
@@ -63,26 +106,41 @@ export async function saveUploadedImages(formData: FormData) {
   for (const image of images) {
     const extension = getExtension(image);
     if (!extension) {
+      logUpload("error", context, "invalid-type", fileMeta(image));
       return { error: "type" };
     }
 
     if (image.size > maxImageSize) {
+      logUpload("error", context, "size-exceeded", fileMeta(image, extension));
       return { error: "size" };
     }
 
+    logUpload("info", context, "validated", fileMeta(image, extension));
     validImages.push({ file: image, extension });
   }
 
   const uploadDir = path.join(process.cwd(), "public", "uploads");
   try {
     await mkdir(uploadDir, { recursive: true });
-  } catch {
+  } catch (error) {
+    logUpload("error", context, "mkdir-failed", {
+      error: error instanceof Error ? error.message : String(error)
+    });
     return { error: "upload" };
   }
 
   const imageUrls: string[] = [];
   for (const image of validImages) {
-    const bytes = Buffer.from(await image.file.arrayBuffer());
+    let bytes: Buffer;
+    try {
+      bytes = Buffer.from(await image.file.arrayBuffer());
+    } catch (error) {
+      logUpload("error", context, "read-failed", {
+        ...fileMeta(image.file, image.extension),
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return { error: "upload" };
+    }
 
     let converted: { bytes: Buffer; extension: string };
     try {
@@ -102,16 +160,29 @@ export async function saveUploadedImages(formData: FormData) {
               bytes,
               extension: image.extension
             };
-    } catch {
+    } catch (error) {
+      logUpload("error", context, "convert-failed", {
+        ...fileMeta(image.file, image.extension),
+        error: error instanceof Error ? error.message : String(error)
+      });
       return { error: "type" };
     }
 
     const fileName = `${crypto.randomUUID()}.${converted.extension}`;
     try {
       await writeFile(path.join(uploadDir, fileName), converted.bytes);
-    } catch {
+    } catch (error) {
+      logUpload("error", context, "write-failed", {
+        ...fileMeta(image.file, image.extension),
+        error: error instanceof Error ? error.message : String(error)
+      });
       return { error: "upload" };
     }
+    logUpload("info", context, "saved", {
+      source: fileMeta(image.file, image.extension),
+      fileName,
+      savedSize: converted.bytes.length
+    });
     imageUrls.push(`/uploads/${fileName}`);
   }
 

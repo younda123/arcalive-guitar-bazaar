@@ -1,4 +1,3 @@
-import { createItemAction } from "@/app/actions";
 import { ItemSubmissionForm } from "@/components/item-submission-form";
 import { copy } from "@/lib/copy";
 import { getEventSettings } from "@/lib/store";
@@ -33,10 +32,7 @@ export default async function NewItemPage({
         <p className="lead">{copy.itemForm.lead}</p>
       </section>
 
-      <ItemSubmissionForm
-        action={createItemAction}
-        errorMessage={error ? errorMessages[error] : undefined}
-      />
+      <ItemSubmissionForm errorMessage={error ? errorMessages[error] : undefined} />
     </main>
   );
 }

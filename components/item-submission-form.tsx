@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { copy } from "@/lib/copy";
 import { deliveryLabels } from "@/lib/labels";
 
 type Preview = {
+  id: string;
   name: string;
   url?: string;
   note?: string;
@@ -33,6 +34,7 @@ const heicImageTypes = new Set([
   "image/heic-sequence",
   "image/heif-sequence"
 ]);
+const itemFormErrors: Record<string, string> = copy.itemForm.errors;
 
 function getFileExtension(file: File) {
   return file.name.split(".").pop()?.toLowerCase() ?? "";
@@ -62,25 +64,16 @@ function validateFiles(files: File[]) {
   return "";
 }
 
-function SubmitButton({ disabled }: { disabled: boolean }) {
-  const { pending } = useFormStatus();
-
-  return (
-    <button className="button primary" disabled={disabled || pending} type="submit">
-      {pending ? copy.itemForm.submitting : copy.itemForm.submit}
-    </button>
-  );
-}
-
 export function ItemSubmissionForm({
-  action,
   errorMessage
 }: {
-  action: (formData: FormData) => void | Promise<void>;
   errorMessage?: string;
 }) {
+  const router = useRouter();
   const [previews, setPreviews] = useState<Preview[]>([]);
   const [clientError, setClientError] = useState("");
+  const [serverError, setServerError] = useState(errorMessage ?? "");
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -103,9 +96,11 @@ export function ItemSubmissionForm({
     const files = Array.from(event.target.files ?? []);
     setClientError(validateFiles(files));
     setPreviews(
-      files.map((file) => {
+      files.map((file, index) => {
+        const id = `${file.name}-${file.lastModified}-${index}`;
         if (needsServerPreview(file)) {
           return {
+            id,
             name: file.name,
             note: copy.itemForm.heicPreviewNote
           };
@@ -113,11 +108,13 @@ export function ItemSubmissionForm({
 
         try {
           return {
+            id,
             name: file.name,
             url: URL.createObjectURL(file)
           };
         } catch {
           return {
+            id,
             name: file.name,
             note: copy.itemForm.heicPreviewNote
           };
@@ -126,10 +123,63 @@ export function ItemSubmissionForm({
     );
   }
 
-  const visibleError = clientError || errorMessage;
+  function handlePreviewError(id: string) {
+    const failedPreview = previews.find((preview) => preview.id === id);
+    if (failedPreview?.url) {
+      URL.revokeObjectURL(failedPreview.url);
+    }
+
+    setPreviews((current) =>
+      current.map((preview) => {
+        if (preview.id !== id || !preview.url) return preview;
+        return {
+          id: preview.id,
+          name: preview.name,
+          note: copy.itemForm.previewUnavailableNote
+        };
+      })
+    );
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setServerError("");
+
+    const form = event.currentTarget;
+    const files = Array.from(
+      (form.elements.namedItem("image") as HTMLInputElement | null)?.files ?? []
+    );
+    const validationError = validateFiles(files);
+    if (validationError) {
+      setClientError(validationError);
+      return;
+    }
+
+    setPending(true);
+    try {
+      const response = await fetch("/api/items", {
+        method: "POST",
+        body: new FormData(form)
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.itemId) {
+        setServerError(itemFormErrors[String(result.error ?? "")] ?? copy.itemForm.errors.upload);
+        return;
+      }
+
+      router.push(`/items/${result.itemId}?submitted=1`);
+    } catch {
+      setServerError(copy.itemForm.errors.upload);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const visibleError = clientError || serverError;
 
   return (
-    <form className="form" action={action}>
+    <form className="form" onSubmit={handleSubmit}>
       {visibleError ? <p className="notice">{visibleError}</p> : null}
 
       <div className="field">
@@ -161,9 +211,13 @@ export function ItemSubmissionForm({
         {previews.length > 0 ? (
           <div className="upload-preview-grid">
             {previews.map((preview) => (
-              <div className="upload-preview" key={preview.name}>
+              <div className="upload-preview" key={preview.id}>
                 {preview.url ? (
-                  <img src={preview.url} alt={preview.name} />
+                  <img
+                    src={preview.url}
+                    alt={preview.name}
+                    onError={() => handlePreviewError(preview.id)}
+                  />
                 ) : (
                   <div className="image-placeholder">{preview.note}</div>
                 )}
@@ -188,7 +242,9 @@ export function ItemSubmissionForm({
         <input id="donorContact" name="donorContact" required />
       </div>
 
-      <SubmitButton disabled={Boolean(clientError)} />
+      <button className="button primary" disabled={Boolean(clientError) || pending} type="submit">
+        {pending ? copy.itemForm.submitting : copy.itemForm.submit}
+      </button>
     </form>
   );
 }
