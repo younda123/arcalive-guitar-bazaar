@@ -12,12 +12,39 @@ type Preview = {
 };
 
 const maxImageCount = 10;
-const maxImageSize = 10 * 1024 * 1024;
-const maxTotalImageSize = 80 * 1024 * 1024;
+const maxImageSize = 25 * 1024 * 1024;
+const maxTotalImageSize = 120 * 1024 * 1024;
 const allowedExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "heif"]);
+const allowedImageTypes = new Set([
+  "image/jpeg",
+  "image/pjpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence"
+]);
+const heicImageTypes = new Set([
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence"
+]);
 
 function getFileExtension(file: File) {
   return file.name.split(".").pop()?.toLowerCase() ?? "";
+}
+
+function isAllowedImage(file: File) {
+  return allowedImageTypes.has(file.type) || allowedExtensions.has(getFileExtension(file));
+}
+
+function needsServerPreview(file: File) {
+  const extension = getFileExtension(file);
+  return heicImageTypes.has(file.type) || extension === "heic" || extension === "heif";
 }
 
 function validateFiles(files: File[]) {
@@ -29,7 +56,7 @@ function validateFiles(files: File[]) {
   const oversized = files.find((file) => file.size > maxImageSize);
   if (oversized) return `${oversized.name}: ${copy.itemForm.errors.size}`;
 
-  const invalid = files.find((file) => !allowedExtensions.has(getFileExtension(file)));
+  const invalid = files.find((file) => !isAllowedImage(file));
   if (invalid) return `${invalid.name}: ${copy.itemForm.errors.type}`;
 
   return "";
@@ -77,18 +104,24 @@ export function ItemSubmissionForm({
     setClientError(validateFiles(files));
     setPreviews(
       files.map((file) => {
-        const extension = getFileExtension(file);
-        if (extension === "heic" || extension === "heif") {
+        if (needsServerPreview(file)) {
           return {
             name: file.name,
             note: copy.itemForm.heicPreviewNote
           };
         }
 
-        return {
-          name: file.name,
-          url: URL.createObjectURL(file)
-        };
+        try {
+          return {
+            name: file.name,
+            url: URL.createObjectURL(file)
+          };
+        } catch {
+          return {
+            name: file.name,
+            note: copy.itemForm.heicPreviewNote
+          };
+        }
       })
     );
   }
@@ -120,7 +153,7 @@ export function ItemSubmissionForm({
           id="image"
           name="image"
           type="file"
-          accept="image/*,.heic,.heif"
+          accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
           multiple
           onChange={handleImageChange}
         />

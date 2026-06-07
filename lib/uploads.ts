@@ -3,8 +3,8 @@ import path from "path";
 import convertHeic from "heic-convert";
 
 const maxImageCount = 10;
-const maxImageSize = 10 * 1024 * 1024;
-const maxTotalImageSize = 80 * 1024 * 1024;
+const maxImageSize = 25 * 1024 * 1024;
+const maxTotalImageSize = 120 * 1024 * 1024;
 const allowedImageTypes = new Map([
   ["image/jpeg", "jpg"],
   ["image/pjpeg", "jpg"],
@@ -13,7 +13,9 @@ const allowedImageTypes = new Map([
   ["image/webp", "webp"],
   ["image/gif", "gif"],
   ["image/heic", "heic"],
-  ["image/heif", "heif"]
+  ["image/heif", "heif"],
+  ["image/heic-sequence", "heic"],
+  ["image/heif-sequence", "heif"]
 ]);
 const allowedImageExtensions = new Map([
   ["jpg", "jpg"],
